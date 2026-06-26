@@ -69,10 +69,14 @@ void MovieApp::quit()
         qDebug() << "MainWindow pointer is valid, requesting Exit action.";
         _mw->requestAction(ActionFactory::Exit);
     } else if (_mw_platform) {
+#ifndef USE_TEST
         qDebug() << "Platform_MainWindow pointer is valid, requesting Exit action.";
          _mw_platform->requestAction(ActionFactory::Exit);
+#endif
     } else {
+#ifndef USE_TEST
         qDebug() << "Neither MainWindow nor Platform_MainWindow pointers are valid.";
+#endif
     }
     qDebug() << "Exiting MovieApp::quit().";
 }

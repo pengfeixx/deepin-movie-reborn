@@ -48,8 +48,10 @@ Settings::Settings()
             qDebug() << "Composited environment detected. Loading full settings from :/resources/data/settings.json";
             m_pSettings = DSettings::fromJsonFile(":/resources/data/settings.json");
         } else {
+#ifndef USE_TEST
             qDebug() << "Non-composited environment detected. Loading low effect settings from :/resources/data/lowEffectSettings.json";
             m_pSettings = DSettings::fromJsonFile(":/resources/data/lowEffectSettings.json");
+#endif
         }
 #endif
     }
@@ -89,6 +91,7 @@ Settings::Settings()
             qDebug() << "Effect mode index:" << index;
 
             if (index  == 1) {
+#ifndef USE_TEST
                 qDebug() << "Effect index is 1. Setting video output to OpenGL.";
                 if (voFamily) {
                     voFamily->setData("items", QStringList() << "OpenGL");
@@ -98,20 +101,25 @@ Settings::Settings()
                         decodeFamily->setData("items", QStringList() << "vaapi" << "vaapi-copy" << "vdpau" << "vdpau-copy");
                     }
                 }
+#endif
             } else if (index == 0) {
+#ifndef USE_TEST
                 if (voFamily)
                     voFamily->setData("items", QStringList() << "gpu"
                                                              << "vaapi"
                                                              << "vdpau"
                                                              << "xv"
                                                              << "x11");
+#endif
             }
             emit baseChanged(key, value);
             qDebug() << "Emitted baseChanged for Effect mode.";
         } else if (key.startsWith("base.decode.Videoout")) {
             if (value.toInt() < 0) {
+#ifndef USE_TEST
                 qWarning() << "Invalid video output value:" << value.toInt() << ". Aborting update.";
                 return;
+#endif
             }
             qInfo() << "Video output changed to index:" << value.toInt();
             auto videoFamily = m_pSettings->option("base.decode.Videoout");
@@ -120,18 +128,25 @@ Settings::Settings()
             
             auto decodeFamily = m_pSettings->option("base.decode.Decodemode");
             if (vo.contains("vaapi")) {
+#ifndef USE_TEST
                 if (decodeFamily)
                     decodeFamily->setData("items", QStringList() << "vaapi" << "vaapi-copy");
                 qDebug() << "Setting decode mode items for vaapi video output.";
+#endif
             } else if (vo.contains("vdpau")) {
+#ifndef USE_TEST
                 if (decodeFamily)
                     decodeFamily->setData("items", QStringList() << "vdpau" << "vdpau-copy");
                 qDebug() << "Setting decode mode items for vdpau video output.";
+#endif
             } else if (vo.contains("xv") || vo.contains("x11")) {
+#ifndef USE_TEST
                 if (decodeFamily)
                     decodeFamily->setData("items", QStringList() << "vdpau" << "vdpau-copy");
                 qDebug() << "Setting decode mode items for xv/x11 video output.";
+#endif
             } else if (vo.contains("gpu")){
+#ifndef USE_TEST
                 if (decodeFamily)
                     decodeFamily->setData("items", QStringList() << "vaapi"
                                                                  << "vaapi-copy"
@@ -140,7 +155,9 @@ Settings::Settings()
                                                                  << "nvdec"
                                                                  << "nvdec-copy"
                                                                  << "rkmpp");
+#endif
             } else if(vo.contains("opengl", Qt::CaseInsensitive)){
+#ifndef USE_TEST
                 if (decodeFamily)
                     decodeFamily->setData("items", QStringList() << "vaapi"
                                                                  << "vaapi-copy"
@@ -148,6 +165,7 @@ Settings::Settings()
                                                                  << "vdpau-copy"
                                                                  << "omx"
                                                                  << "omx-copy");
+#endif
             }
             emit baseChanged(key, value);
             qDebug() << "Emitted baseChanged for Videoout mode.";
@@ -182,7 +200,9 @@ Settings::Settings()
         qDebug() << "Setting play mode options for playmodeFamily.";
         playmodeFamily->setData("items", playmodeDatabase);
     } else {
+#ifndef USE_TEST
         qWarning() << "Play mode family option not found!";
+#endif
     }
 
     QStringList hwaccelDatabase;
@@ -194,7 +214,9 @@ Settings::Settings()
         qDebug() << "Setting hardware acceleration options for hwaccelFamily.";
         hwaccelFamily->setData("items", hwaccelDatabase);
     } else {
+#ifndef USE_TEST
         qWarning() << "Hardware acceleration family option not found!";
+#endif
     }
 
     QFontDatabase fontDatabase;
@@ -203,7 +225,9 @@ Settings::Settings()
         qDebug() << "Setting font family options for fontFamliy.";
         fontFamliy->setData("items", fontDatabase.families());
     } else {
+#ifndef USE_TEST
         qWarning() << "Font family option not found!";
+#endif
     }
 
     if (utils::isJjwGPUPresent() && utils::check_wayland_env()) {
@@ -215,13 +239,18 @@ Settings::Settings()
         qDebug() << "Wayland environment detected. Configuring video output and decode mode options.";
         auto voFamily = m_pSettings->option("base.decode.Videoout");
         if (voFamily) {
+#ifndef USE_TEST
             qDebug() << "Setting video output to OpenGL for Wayland.";
             voFamily->setData("items", QStringList() << "OpenGL");
+#endif
         } else {
+#ifndef USE_TEST
             qWarning() << "Video output family option not found for Wayland configuration!";
+#endif
         }
         auto decodeFamily = m_pSettings->option("base.decode.Decodemode");
         if (decodeFamily) {
+#ifndef USE_TEST
             qDebug() << "Setting decode mode items for Wayland.";
             decodeFamily->setData("items", QStringList() << "vaapi"
                                                          << "vaapi-copy"
@@ -229,8 +258,11 @@ Settings::Settings()
                                                          << "vdpau-copy"
                                                          << "omx"
                                                          << "omx-copy");
+#endif
         } else {
+#ifndef USE_TEST
             qWarning() << "Decode mode family option not found for Wayland configuration!";
+#endif
         }
     } else {
         qDebug() << "X11 environment detected. Configuring video output and decode mode options.";
@@ -254,16 +286,24 @@ Settings::Settings()
             qDebug() << "X11: Effect index is 1. Setting high effect mode options.";
             auto voFamily = m_pSettings->option("base.decode.Videoout");
             if (voFamily) {
+#ifndef USE_TEST
                 qDebug() << "X11: Setting video output to OpenGL for high effect mode.";
                 voFamily->setData("items", QStringList() << "OpenGL");
+#endif
             } else {
+#ifndef USE_TEST
                 qWarning() << "X11: Video output family option not found for high effect mode!";
+#endif
             }
             if (hwdecFamily) {
+#ifndef USE_TEST
                 qDebug() << "X11: Setting hardware decode items for high effect mode.";
                 hwdecFamily->setData("items", hwdecList);
+#endif
             } else {
+#ifndef USE_TEST
                 qWarning() << "X11: Hardware decode family option not found for high effect mode!";
+#endif
             }
         } else {
             if(effectIndex == 0){

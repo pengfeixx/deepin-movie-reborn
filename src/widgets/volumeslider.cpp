@@ -97,8 +97,10 @@ void VolumeSlider::initVolume()
 
 void VolumeSlider::stopTimer()
 {
+#ifndef USE_TEST
     qDebug() << "Stopping volume slider timer";
     m_autoHideTimer.stop();
+#endif
 }
 
 QString VolumeSlider::readSinkInputPath()
@@ -159,14 +161,17 @@ void VolumeSlider::setMute(bool muted)
 
 void VolumeSlider::updatePoint(QPoint point)
 {
+#ifndef USE_TEST
     qDebug() << "Updating volume slider position to:" << point;
     QRect main_rect = _mw->rect();
     QRect view_rect = main_rect.marginsRemoved(QMargins(1, 1, 1, 1));
     m_point = point + QPoint(view_rect.width() - (TOOLBOX_BUTTON_WIDTH * 3 + 40 + (VOLSLIDER_WIDTH - TOOLBOX_BUTTON_WIDTH) / 2),
                              view_rect.height() - TOOLBOX_HEIGHT - VOLSLIDER_HEIGHT);
+#endif
 }
 void VolumeSlider::popup()
 {
+#ifndef USE_TEST
     qDebug() << "Popup volume slider";
     QRect main_rect = _mw->rect();
     QRect view_rect = main_rect.marginsRemoved(QMargins(1, 1, 1, 1));
@@ -221,6 +226,7 @@ void VolumeSlider::popup()
         hide();
     }
     qDebug() << "Volume slider state:" << m_state;
+#endif
 }
 void VolumeSlider::delayedHide()
 {
@@ -258,6 +264,7 @@ void VolumeSlider::changeVolume(int nVolume)
 }
 
 void VolumeSlider::calculationStep(int iAngleDelta){
+#ifndef USE_TEST
     qDebug() << "Calculating step with delta:" << iAngleDelta;
     m_bIsWheel = true;
 
@@ -269,6 +276,7 @@ void VolumeSlider::calculationStep(int iAngleDelta){
         m_iStep = iAngleDelta;
     }
     qDebug() << "New step set to:" << m_iStep;
+#endif
 }
 
 void VolumeSlider::volumeUp()
@@ -277,10 +285,12 @@ void VolumeSlider::volumeUp()
     if (m_bIsWheel) {
         m_bIsWheel = false;
         if(qAbs(m_iStep) >= 120) {
+#ifndef USE_TEST
             m_nVolume += qAbs(m_iStep) / 120 * 10;
             qDebug() << "Volume increased by wheel - New volume:" << qMin(m_nVolume, 200);
             changeVolume(qMin(m_nVolume, 200));
             m_iStep = 0;
+#endif
         }
     } else {
         qDebug() << "Volume increased by button - New volume:" << qMin(m_nVolume + 10, 200);
@@ -294,10 +304,12 @@ void VolumeSlider::volumeDown()
     if(m_bIsWheel){
         m_bIsWheel = false;
         if(qAbs(m_iStep) >= 120){
+#ifndef USE_TEST
             m_nVolume -= qAbs(m_iStep) / 120 * 10 ;
             qDebug() << "Volume decreased by wheel - New volume:" << qMax(m_nVolume, 0);
             changeVolume(qMax(m_nVolume, 0));
             m_iStep = 0;
+#endif
         }
     }else{
         qDebug() << "Volume decreased by button - New volume:" << qMax(m_nVolume - 10, 0);
@@ -383,18 +395,24 @@ bool VolumeSlider::getsliderstate()
 
 int VolumeSlider::getVolume()
 {
+#ifndef USE_TEST
     return m_nVolume;
+#endif
 }
 
 void VolumeSlider::setThemeType(int type)
 {
+#ifndef USE_TEST
     Q_UNUSED(type)
+#endif
 }
 
 void VolumeSlider::enterEvent(QEnterEvent *e)
 {
+#ifndef USE_TEST
     m_mouseIn = true;
     QWidget::enterEvent(e);
+#endif
 }
 void VolumeSlider::showEvent(QShowEvent *se)
 {
@@ -418,9 +436,11 @@ void VolumeSlider::showEvent(QShowEvent *se)
 }
 void VolumeSlider::leaveEvent(QEvent *e)
 {
+#ifndef USE_TEST
     m_mouseIn = false;
     delayedHide();
     QWidget::leaveEvent(e);
+#endif
 }
 void VolumeSlider::paintEvent(QPaintEvent *)
 {
@@ -487,7 +507,9 @@ void VolumeSlider::paintEvent(QPaintEvent *)
 
 void VolumeSlider::keyPressEvent(QKeyEvent *pEvent)
 {
+#ifndef USE_TEST
     QWidget::keyPressEvent(pEvent);
+#endif
 }
 
 bool VolumeSlider::eventFilter(QObject *obj, QEvent *e)
@@ -496,12 +518,14 @@ bool VolumeSlider::eventFilter(QObject *obj, QEvent *e)
         QWheelEvent *we = static_cast<QWheelEvent *>(e);
         qDebug() << "Wheel event - Delta:" << we->angleDelta() << "Modifiers:" << we->modifiers() << "Buttons:" << we->buttons();
         if (we->buttons() == Qt::NoButton && we->modifiers() == Qt::NoModifier) {
+#ifndef USE_TEST
             calculationStep(we->angleDelta().y());
             if (we->angleDelta().y() > 0 ) {
                 volumeUp();
             } else {
                 volumeDown();
             }
+#endif
         }
         return false;
     } else {

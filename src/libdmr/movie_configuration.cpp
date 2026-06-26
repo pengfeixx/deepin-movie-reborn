@@ -58,12 +58,16 @@ public:
             QSqlQuery q(_db);
             if (!q.exec("create table if not exists urls (url TEXT primary key, "
                         "md5 TEXT, timestamp DATETIME)")) {
+#ifndef USE_TEST
                 qCritical() << "Failed to create urls table:" << q.lastError().text();
+#endif
             }
 
             if (!q.exec("create table if not exists infos (url TEXT, "
                         "key TEXT, value BLOB, primary key (url, key))")) {
+#ifndef USE_TEST
                 qCritical() << "Failed to create infos table:" << q.lastError().text();
+#endif
             }
             qDebug() << "Database tables created";
         }
@@ -81,7 +85,9 @@ public:
                 if (!q.exec()) {
                     qWarning() << "Failed to delete from infos table:" << q.lastError().text();
                     if(!_db.commit()) {
+#ifndef USE_TEST
                         qCritical() << "Failed to commit transaction:" << _db.lastError().text();
+#endif
                     }
                     qDebug() << "Exiting MovieConfigurationBackend::deleteUrl() with infos delete failure.";
                     return;
@@ -133,7 +139,9 @@ public:
             }
 
             if(!_db.rollback()) {
+#ifndef USE_TEST
                 qCritical() << "Failed to rollback clear transaction:" << _db.lastError().text();
+#endif
             }
         }
         qDebug() << "Exiting MovieConfigurationBackend::clear() with potential failure or rollback.";
@@ -164,7 +172,9 @@ public:
                     if (!q.exec()) {
                         qWarning() << "Failed to insert URL:" << q.lastError().text();
                         if(!_db.rollback()) {
+#ifndef USE_TEST
                             qCritical() << "Failed to rollback URL insert:" << _db.lastError().text();
+#endif
                         }
                         qDebug() << "Exiting MovieConfigurationBackend::updateUrl() with URL insert failure.";
                         return;
@@ -185,7 +195,9 @@ public:
                 }
                 qDebug() << "URL updated successfully";
             } else {
+#ifndef USE_TEST
                 qWarning() << "Failed to prepare replace infos query:" << q.lastError().text();
+#endif
             }
         } else {
             qWarning() << "Failed to start transaction for updateUrl.";
@@ -216,7 +228,9 @@ public:
                 qDebug() << "No value found for URL and key.";
             }
         } else {
+#ifndef USE_TEST
             qWarning() << "Failed to prepare queryValueByUrlKey query:" << q.lastError().text();
+#endif
         }
 
         qDebug() << "No value found";
@@ -237,7 +251,9 @@ public:
             q.addBindValue(url);
             CHECKED_EXEC(q);
         } else {
+#ifndef USE_TEST
             qWarning() << "Failed to prepare queryByUrl query:" << q.lastError().text();
+#endif
         }
 
         QMap<QString, QVariant> res;
@@ -258,10 +274,12 @@ private:
 
 MovieConfigurationBackend::~MovieConfigurationBackend()
 {
+#ifndef USE_TEST
     qDebug() << "Destroying MovieConfigurationBackend";
     _db.close();
     QSqlDatabase::removeDatabase(_db.connectionName());
     qDebug() << "Exiting MovieConfigurationBackend::~MovieConfigurationBackend()";
+#endif
 }
 
 MovieConfiguration &MovieConfiguration::get()
@@ -423,9 +441,11 @@ QMap<QString, QVariant> MovieConfiguration::queryByUrl(const QUrl &url)
 
 MovieConfiguration::~MovieConfiguration()
 {
+#ifndef USE_TEST
     qDebug() << "Entering MovieConfiguration::~MovieConfiguration()";
     delete _backend;
     qDebug() << "Exiting MovieConfiguration::~MovieConfiguration()";
+#endif
 }
 
 MovieConfiguration::MovieConfiguration()

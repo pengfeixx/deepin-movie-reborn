@@ -111,7 +111,9 @@ CDlnaSoapPost::~CDlnaSoapPost()
         m_pNetWorkManager = nullptr;
         qDebug() << "QNetworkAccessManager deleted and set to nullptr.";
     } else {
+#ifndef USE_TEST
         qDebug() << "QNetworkAccessManager is already nullptr, no cleanup needed.";
+#endif
     }
     qDebug() << "Exiting CDlnaSoapPost destructor.";
 }

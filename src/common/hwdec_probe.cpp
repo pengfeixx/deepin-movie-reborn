@@ -20,11 +20,14 @@ HwdecProbe::HwdecProbe():m_hwDeviceCtx(nullptr)
 
 HwdecProbe& HwdecProbe::get()
 {
+#ifndef USE_TEST
     return m_ffmpegProbe;
+#endif
 }
 
 bool HwdecProbe::isFileCanHwdec(const QUrl& url, QList<QString>& hwList)
 {
+#ifndef USE_TEST
     qInfo() << "Checking hardware decoding capability for:" << url.toString();
     hwList.clear();
     AVFormatContext *input_ctx = nullptr;
@@ -86,10 +89,12 @@ bool HwdecProbe::isFileCanHwdec(const QUrl& url, QList<QString>& hwList)
 
     qInfo() << "Hardware decoding check completed. Found" << hwList.size() << "compatible decoders";
     return hwList.size() > 0;
+#endif
 }
 
 void HwdecProbe::initffmpegInterface()
 {
+#ifndef USE_TEST
     qDebug() << "Initializing FFmpeg interface";
     QLibrary avcodecLibrary(SysUtils::libPath("libavcodec.so"));
     QLibrary avformatLibrary(SysUtils::libPath("libavformat.so"));
@@ -122,10 +127,12 @@ void HwdecProbe::initffmpegInterface()
     m_avBufferUnref = reinterpret_cast<ffmAvBufferUnref>(avutilLibrary.resolve("av_buffer_unref"));
 
     qDebug() << "FFmpeg interface initialization completed";
+#endif
 }
 
 void HwdecProbe::getHwTypes()
 {
+#ifndef USE_TEST
     qDebug() << "Getting available hardware decoder types";
     m_hwTypeList.clear();
     AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
@@ -135,10 +142,12 @@ void HwdecProbe::getHwTypes()
     }
     
     qDebug() << "Found" << m_hwTypeList.size() << "hardware decoder types";
+#endif
 }
 
 int HwdecProbe::hwDecoderInit(AVCodecContext *ctx, const int type)
 {
+#ifndef USE_TEST
     qDebug() << "Initializing hardware decoder for type:" << m_avHwdeviceGetTypeName(static_cast<AVHWDeviceType>(type));
     int err = 0;
     if(nullptr != m_hwDeviceCtx) {
@@ -155,10 +164,12 @@ int HwdecProbe::hwDecoderInit(AVCodecContext *ctx, const int type)
     qDebug() << "Hardware decoder initialized successfully";
 
     return err;
+#endif
 }
 
 bool HwdecProbe::isTypeHaveHwdec(const AVCodec *pDec, AVHWDeviceType type)
 {
+#ifndef USE_TEST
     qDebug() << "Checking hardware decoder support for codec:" << pDec->name << "type:" << m_avHwdeviceGetTypeName(type);
     bool rs = true;
     //is have tmpType hwdec config
@@ -177,5 +188,6 @@ bool HwdecProbe::isTypeHaveHwdec(const AVCodec *pDec, AVHWDeviceType type)
     }
 
     return rs;
+#endif
 }
 }

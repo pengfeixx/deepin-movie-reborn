@@ -287,6 +287,7 @@ namespace dmr {
     }
 
     static void* GLAPIENTRY glMPGetNativeDisplay(const char* name) {
+#ifndef USE_TEST
         qWarning() << __func__ << name;
         if (!strcmp(name, "x11") || !strcmp(name, "X11")) {
             qDebug() << "DEBUG: X11 display detected.";
@@ -294,6 +295,7 @@ namespace dmr {
         }
         qDebug() << "DEBUG: Exiting glMPGetNativeDisplay. No native display found or handled.";
         return nullptr;
+#endif
     }
 
     // Retrieves the Wayland wl_display from Qt's platform plugin.
@@ -301,6 +303,7 @@ namespace dmr {
     // must treat nullptr as "Wayland unavailable" and handle it explicitly.
     static void *getWaylandDisplay()
     {
+#ifndef USE_TEST
         QPlatformNativeInterface *native = QGuiApplication::platformNativeInterface();
         if (!native) {
             qWarning() << "getWaylandDisplay: platformNativeInterface() returned nullptr; "
@@ -315,14 +318,17 @@ namespace dmr {
             qInfo() << "getWaylandDisplay: wl_display =" << wl_dpy;
         }
         return wl_dpy;
+#endif
     }
 
     static void* EGLAPIENTRY glMPGetNativeDisplay_EGL(const char* name) {
+#ifndef USE_TEST
         qWarning() << __func__ << name;
         if (!strcmp(name, "wayland")) {
             return getWaylandDisplay();
         }
         return nullptr;
+#endif
     }
 
     static void *get_proc_address(void *pCtx, const char *pName) {
@@ -336,11 +342,15 @@ namespace dmr {
 
         if (!strcmp(pName, "glMPGetNativeDisplay")) {
             if(utils::check_wayland_env()){
+#ifndef USE_TEST
                 qDebug() << "DEBUG: Resolved glMPGetNativeDisplay to EGL version for Wayland.";
                 return (void*)glMPGetNativeDisplay_EGL;
+#endif
             }else{
+#ifndef USE_TEST
                 qDebug() << "DEBUG: Resolved glMPGetNativeDisplay to X11 version for non-Wayland.";
                 return (void*)glMPGetNativeDisplay;
+#endif
             }
         }
         qDebug() << "DEBUG: Exiting get_proc_address. Resolved address for:" << pName;
@@ -715,8 +725,10 @@ namespace dmr {
             qInfo() << "Configuring MPV for Wayland environment";
             void *wl_dpy = getWaylandDisplay();
             if (!wl_dpy) {
+#ifndef USE_TEST
                 qWarning() << "initializeGL: wl_display is null; MPV Wayland render context "
                                "will likely fail. Check the Qt platform plugin in use.";
+#endif
             }
             params[2] = {MPV_RENDER_PARAM_WL_DISPLAY, wl_dpy};
         }

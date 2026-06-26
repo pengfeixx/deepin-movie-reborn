@@ -489,7 +489,9 @@ void MovieInfoDialog::paintEvent(QPaintEvent *ev)
     if (DGuiApplicationHelper::LightType == DGuiApplicationHelper::instance()->themeType()) {
         painter.fillRect(this->rect(), QColor(255, 255, 255, static_cast<int>(255 * 0.8)));
     } else {
+#ifndef USE_TEST
         painter.fillRect(this->rect(), QColor(0, 0, 0, static_cast<int>(255 * 0.8)));
+#endif
     }
 
     QDialog::paintEvent(ev);
@@ -507,6 +509,7 @@ void MovieInfoDialog::showEvent(QShowEvent *pEvent)
  */
 void MovieInfoDialog::onFontChanged(const QFont &font)
 {
+#ifndef USE_TEST
     qDebug() << "Font changed, updating text display";
     QFontMetrics fm(font);
     QString strFileName = m_pFileNameLbl->fontMetrics().elidedText(QFileInfo(m_sFilePath).fileName(), Qt::ElideMiddle, m_pFileNameLbl->width());
@@ -517,6 +520,7 @@ void MovieInfoDialog::onFontChanged(const QFont &font)
                             m_pFilePathLbl->font(), Qt::ElideRight, fm.height(), m_pFilePathLbl->width());
         m_pFilePathLbl->setText(sFilePath);
     }
+#endif
 }
 /**
  * @brief changedHeight 高度变化槽函数
@@ -546,8 +550,10 @@ void MovieInfoDialog::changedHeight(const int height)
  */
 void MovieInfoDialog::slotThemeTypeChanged()
 {
+#ifndef USE_TEST
     qDebug() << "Theme type changed, updating text color";
     m_pFileNameLbl->setForegroundRole(DPalette::BrightText);
+#endif
 }
 /**
  * @brief addRow 增加信息条目函数

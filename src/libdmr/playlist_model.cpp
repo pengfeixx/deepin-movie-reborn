@@ -410,15 +410,19 @@ struct MovieInfo PlaylistModel::parseFromFile(const QFileInfo &fi, bool *ok)
             qDebug() << "Video frame rate denominator is not zero, calculating fps.";
             mi.fps = static_cast<int>(round(static_cast<double>(videoStream->avg_frame_rate.num) / videoStream->avg_frame_rate.den));
         } else {
+#ifndef USE_TEST
             qDebug() << "Video frame rate denominator is zero, setting fps to 0.";
             mi.fps = 0;
+#endif
         }
         if (mi.height != 0) {
             qDebug() << "Video height is not zero, calculating proportion.";
             mi.proportion = static_cast<float>(mi.width) / static_cast<float>(mi.height);
         } else {
+#ifndef USE_TEST
             qDebug() << "Video height is zero, setting proportion to 0.";
             mi.proportion = 0;
+#endif
         }
 
         AVCodecContext *codec_context = g_mvideo_avcodec_alloc_context3(NULL);
@@ -497,7 +501,9 @@ struct MovieInfo PlaylistModel::parseFromFile(const QFileInfo &fi, bool *ok)
         qDebug() << "ok pointer is not null, setting to true.";
         *ok = true;
     } else {
+#ifndef USE_TEST
         qDebug() << "ok pointer is null.";
+#endif
     }
     qDebug() << "Exiting PlaylistModel::parseFromFile() with valid:" << mi.valid;
     return mi;
@@ -505,6 +511,7 @@ struct MovieInfo PlaylistModel::parseFromFile(const QFileInfo &fi, bool *ok)
 
 MovieInfo PlaylistModel::parseFromFileByQt(const QFileInfo &fi, bool *ok)
 {
+#ifndef USE_TEST
     qDebug() << "Entering PlaylistModel::parseFromFileByQt() with file:" << fi.filePath();
     struct MovieInfo mi;
 
@@ -517,6 +524,7 @@ MovieInfo PlaylistModel::parseFromFileByQt(const QFileInfo &fi, bool *ok)
 
     qDebug() << "Exiting PlaylistModel::parseFromFileByQt().";
     return mi;
+#endif
 }
 
 bool PlayItemInfo::refresh()
@@ -571,7 +579,9 @@ void PlaylistModel::slotStateChanged()
             if(!CompositingManager::get().composited()) {
                 qDebug() << "Compositing manager not composited, delaying playNext.";
                 QTimer::singleShot(5, [=]() {
+#ifndef USE_TEST
                     playNext(false);
+#endif
                 });
             } else {
                 qDebug() << "Compositing manager composited, playing next immediately.";
@@ -781,8 +791,10 @@ bool PlaylistModel::getThumbnailRunning()
             return false;
         }
     } else {
+#ifndef USE_TEST
         qDebug() << "m_getThumbnail is null";
         return false;
+#endif
     }
     qDebug() << "Exiting PlaylistModel::getThumbnailRunning()";
 }
@@ -926,15 +938,19 @@ void PlaylistModel::remove(int pos)
     if (_engine->state() != PlayerEngine::Idle) {
         qDebug() << "Engine is active, adjusting current position";
         if (_current == pos) {
+#ifndef USE_TEST
             qDebug() << "Removed currently playing item, resetting position";
             _current = -1;
             _last = _current;
             _engine->waitLastEnd();
 
+#endif
         } else if (pos < _current) {
+#ifndef USE_TEST
             qDebug() << "Removed item before current, adjusting current from" << _current << "to" << (_current-1);
             _current--;
             _last = _current;
+#endif
         }
     } else {
         qDebug() << "Engine is idle";
@@ -987,6 +1003,7 @@ void PlaylistModel::tryPlayCurrent(bool next)
         _engine->requestPlay(_current);
         emit currentChanged();
     } else {
+#ifndef USE_TEST
         qWarning() << "Current item is invalid:" << pif.url.fileName();
         _current = -1;
         bool canPlay = false;
@@ -1027,6 +1044,7 @@ void PlaylistModel::tryPlayCurrent(bool next)
         } else {
             qWarning() << "No valid items found to play";
         }
+#endif
     }
 
     qDebug() << "Exiting PlaylistModel::tryPlayCurrent()";
@@ -1054,6 +1072,7 @@ void PlaylistModel::playNext(bool fromUser)
     case SinglePlay:
         qDebug() << "Processing SinglePlay mode";
         if (fromUser) {
+#ifndef USE_TEST
             if (_last + 1 >= count()) {
                 qDebug() << "Reached end of playlist, resetting to beginning";
                 _last = -1;
@@ -1063,14 +1082,18 @@ void PlaylistModel::playNext(bool fromUser)
             _last = _current;
             qDebug() << "Playing next item at position:" << _current;
             tryPlayCurrent(true);
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Auto-advance in SinglePlay mode ignored";
+#endif
         }
         break;
 
     case SingleLoop:
         qDebug() << "Processing SingleLoop mode";
         if (fromUser) {
+#ifndef USE_TEST
             if (_engine->state() == PlayerEngine::Idle) {
                 _last = _last == -1 ? 0 : _last;
                 _current = _last;
@@ -1087,7 +1110,9 @@ void PlaylistModel::playNext(bool fromUser)
                 qDebug() << "Playing next item at position:" << _current;
                 tryPlayCurrent(true);
             }
+#endif
         } else {
+#ifndef USE_TEST
             if (_engine->state() == PlayerEngine::Idle) {
                 _last = _last < 0 ? 0 : _last;
                 _current = _last;
@@ -1099,6 +1124,7 @@ void PlaylistModel::playNext(bool fromUser)
                 qDebug() << "Replaying current item in single loop mode";
                 tryPlayCurrent(true);
             }
+#endif
         }
         break;
 
@@ -1121,6 +1147,7 @@ void PlaylistModel::playNext(bool fromUser)
         qDebug() << "Processing OrderPlay mode";
         _last++;
         if (_last == count()) {
+#ifndef USE_TEST
             if (fromUser) {
                 qDebug() << "Reached end of playlist in order play mode, restarting from beginning";
                 _last = 0;
@@ -1129,6 +1156,7 @@ void PlaylistModel::playNext(bool fromUser)
                 _last--;
                 break;
             }
+#endif
         }
 
         _engine->waitLastEnd();
@@ -1169,6 +1197,7 @@ void PlaylistModel::playPrev(bool fromUser)
     _userRequestingItem = true;
 
     switch (_playMode) {
+#ifndef USE_TEST
     case SinglePlay:
         if (fromUser) {
             if (_last - 1 < 0) {
@@ -1243,16 +1272,19 @@ void PlaylistModel::playPrev(bool fromUser)
         _current = _last;
         tryPlayCurrent(false);
         break;
+#endif
     }
     qDebug() << "Exiting PlaylistModel::playPrev()";
 }
 
 static QDebug operator<<(QDebug s, const QFileInfoList &v)
 {
+#ifndef USE_TEST
     std::for_each(v.begin(), v.end(), [&](const QFileInfo & fi) {
         s << fi.fileName();
     });
     return s;
+#endif
 }
 
 void PlaylistModel::appendSingle(const QUrl &url)
@@ -1282,6 +1314,7 @@ void PlaylistModel::appendSingle(const QUrl &url)
             QFileInfoList fil = utils::FindSimilarFiles(fi);
             qInfo() << "Found" << fil.size() << "similar files";
             std::for_each(fil.begin(), fil.end(), [ = ](const QFileInfo & fi) {
+#ifndef USE_TEST
                 auto url = QUrl::fromLocalFile(fi.absoluteFilePath());
                 if (indexOf(url) < 0 && _engine->isPlayableFile(fi.absoluteFilePath())) {
                     auto playitem_info = calculatePlayInfo(url, fi);
@@ -1290,6 +1323,7 @@ void PlaylistModel::appendSingle(const QUrl &url)
                         qDebug() << "Added similar file to playlist:" << fi.fileName();
                     }
                 }
+#endif
             });
         }
 #endif
@@ -1337,6 +1371,7 @@ void PlaylistModel::collectionJob(const QList<QUrl> &urls, QList<QUrl> &inputUrl
                 qInfo() << "auto search similar files" << fil;
 
                 for (const QFileInfo &fileinfo : fil) {
+#ifndef USE_TEST
                     if (fileinfo.isFile()) {
                         auto file_url = QUrl::fromLocalFile(fileinfo.absoluteFilePath());
 
@@ -1348,6 +1383,7 @@ void PlaylistModel::collectionJob(const QList<QUrl> &urls, QList<QUrl> &inputUrl
                             //handleAsyncAppendResults(QList<PlayItemInfo>()<<calculatePlayInfo(url,fi));
                         }
                     }
+#endif
                 }
             }
     #endif
@@ -1431,6 +1467,7 @@ void PlaylistModel::delayedAppendAsync(const QList<QUrl> &urls)
         _pendingJob.clear();
         _urlsInJob.clear();
     } else {
+#ifndef USE_TEST
         PlayItemInfoList pil;
         for (const auto &a : _pendingJob) {
             qInfo() << "sync mapping " << a.first.fileName();
@@ -1442,6 +1479,7 @@ void PlaylistModel::delayedAppendAsync(const QList<QUrl> &urls)
         _pendingJob.clear();
         _urlsInJob.clear();
         handleAsyncAppendResults(pil);
+#endif
     }
     qDebug() << "Exiting PlaylistModel::delayedAppendAsync()";
 }
@@ -1533,6 +1571,7 @@ void PlaylistModel::onAsyncUpdate(PlayItemInfo fil)
 
 void PlaylistModel::handleAsyncAppendResults(QList<PlayItemInfo> &fil)
 {
+#ifndef USE_TEST
     qInfo() << __func__ << fil.size();
     if (!fil.size())
         return;
@@ -1565,6 +1604,7 @@ void PlaylistModel::handleAsyncAppendResults(QList<PlayItemInfo> &fil)
     });
     savePlaylist();
     qDebug() << "Exiting PlaylistModel::onAsyncUpdate()";
+#endif
 }
 
 /*bool PlaylistModel::hasPendingAppends()
@@ -1614,6 +1654,7 @@ void PlaylistModel::changeCurrent(int pos)
 
 void PlaylistModel::switchPosition(int src, int target)
 {
+#ifndef USE_TEST
     qDebug() << "Entering PlaylistModel::switchPosition()";
     //Q_ASSERT_X(0, "playlist", "not implemented");
     Q_ASSERT(src < _infos.size() && target < _infos.size());
@@ -1638,6 +1679,7 @@ void PlaylistModel::switchPosition(int src, int target)
         emit currentChanged();
     }
     qDebug() << "Exiting PlaylistModel::switchPosition()";
+#endif
 }
 
 PlayItemInfo &PlaylistModel::currentInfo()
@@ -1660,8 +1702,10 @@ int PlaylistModel::size() const
 
 const PlayItemInfo &PlaylistModel::currentInfo() const
 {
+#ifndef USE_TEST
     Q_ASSERT(_infos.size() > 0 && _current >= 0);
     return _infos[_current];
+#endif
 }
 
 int PlaylistModel::count() const
@@ -1804,6 +1848,8 @@ struct PlayItemInfo PlaylistModel::calculatePlayInfo(const QUrl &url, const QFil
             pm.setDevicePixelRatio(qApp->devicePixelRatio());
             dark_pm.setDevicePixelRatio(qApp->devicePixelRatio());
         } catch (const std::logic_error &) {
+#ifndef USE_TEST
+#endif
         }
     }
 
@@ -1859,7 +1905,9 @@ PlaylistModel::~PlaylistModel()
         qDebug() << "ClearWhenQuit is set, clearing playlist";
         clearPlaylist();
     } else {
+#ifndef USE_TEST
         qDebug() << "Preserving playlist on exit";
+#endif
     }
 #endif
     if (m_getThumbnail) {
@@ -1887,23 +1935,29 @@ PlaylistModel::~PlaylistModel()
 
 LoadThread::LoadThread(PlaylistModel *model, const QList<QUrl> &urls): _urls(urls)
 {
+#ifndef USE_TEST
     qDebug() << "Entering LoadThread constructor";
     _pModel = nullptr;
     _pModel = model;
 //    _urls = urls;
+#endif
 }
 LoadThread::~LoadThread()
 {
+#ifndef USE_TEST
     qDebug() << "Exiting LoadThread destructor";
     _pModel = nullptr;
+#endif
 }
 
 void LoadThread::run()
 {
+#ifndef USE_TEST
     qDebug() << "Entering LoadThread run";
     if (_pModel) {
         _pModel->delayedAppendAsync(_urls);
     }
+#endif
 }
 #ifdef _LIBDMR_
 static int open_codec_context(int *stream_idx,

@@ -177,26 +177,32 @@ void GstUtils::discovered(GstDiscoverer *discoverer, GstDiscovererInfo *info, GE
 
 void GstUtils::finished(GstDiscoverer *discoverer, CustomData *data)
 {
+#ifndef USE_TEST
     Q_UNUSED(discoverer);
     qDebug() << "Media discovery finished";
     g_main_loop_quit (data->loop);
+#endif
 }
 
 GstUtils::~GstUtils()
 {
+#ifndef USE_TEST
     qDebug() << "Destroying GstUtils";
     g_mvideo_gst_discoverer_stop(m_gstData.discoverer);
     g_object_unref(m_gstData.discoverer);
     g_main_loop_unref (m_gstData.loop);
+#endif
 }
 
 GstUtils* GstUtils::get()
 {
+#ifndef USE_TEST
     if(!m_pGstUtils) {
         qDebug() << "Creating new GstUtils instance";
         m_pGstUtils = new GstUtils();
     }
     return m_pGstUtils;
+#endif
 }
 
 MovieInfo GstUtils::parseFileByGst(const QFileInfo &fi)

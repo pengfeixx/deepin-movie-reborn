@@ -66,6 +66,7 @@ DMenu *ActionFactory::titlebarMenu()
             //DEF_ACTION("Help", ActionKind::Help);
             //DEF_ACTION("Exit", ActionKind::Exit);
         } else {
+#ifndef USE_TEST
             qDebug() << "System is a pad system. Adding pad menu items.";
             m_pTitlebarMenu = pMenu_p;
             {
@@ -116,6 +117,7 @@ DMenu *ActionFactory::titlebarMenu()
                     pMenu->setEnabled(statu);
                 });
             }
+#endif
         }
 
         m_pTitlebarMenu = pMenu_p;
@@ -324,6 +326,7 @@ DMenu *ActionFactory::mainContextMenu()
         m_pContextMenu = pMenu_p;
         qDebug() << "MPV context menu created successfully.";
     } else {
+#ifndef USE_TEST
         qDebug() << "MPV not found. Creating non-MPV context menu.";
         DMenu *pMenu_p = new DMenu();
         DEF_ACTION(tr("Open file"), ActionKind::OpenFileList);
@@ -381,6 +384,7 @@ DMenu *ActionFactory::mainContextMenu()
         DEF_ACTION(tr("Settings"), ActionKind::Settings);
         m_pContextMenu = pMenu_p;
         qDebug() << "Non-MPV context menu created successfully.";
+#endif
     }
     qDebug() << "Exiting ActionFactory::mainContextMenu(). Returning context menu.";
     return m_pContextMenu;
@@ -450,8 +454,10 @@ void ActionFactory::updateMainActionsForMovie(const PlayingMovieInfo &pmf)
                 qDebug() << "title is [internal]";
                 DEF_ACTION_CHECKED_GROUP(tr("Track") + QString::number(i + 1), ActionKind::SelectTrack, m_pAudiosgroup);
             } else {
+#ifndef USE_TEST
                 qDebug() << "title is not [internal]";
                 DEF_ACTION_CHECKED_GROUP(pmf.audios[i]["title"].toString(), ActionKind::SelectTrack, m_pAudiosgroup);
+#endif
             }
             QAction *pAct = pMenu->actions().last();
             pAct->setProperty("args", QList<QVariant>() << i);

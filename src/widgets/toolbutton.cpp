@@ -28,8 +28,10 @@ VolumeButton::VolumeButton(QWidget *parent)
         pos.ry() = pos.y() - 40;
 
         if (nullptr != m_pToolTip) {
+#ifndef USE_TEST
             m_pToolTip->move(pos);
             m_pToolTip->show();
+#endif
         }
     });
 
@@ -169,6 +171,7 @@ void VolumeButton::leaveEvent(QEvent *ev)
 
 void VolumeButton::wheelEvent(QWheelEvent *we)
 {
+#ifndef USE_TEST
     qDebug() << "Entering VolumeButton::wheelEvent()";
     //qInfo() << we->angleDelta() << we->modifiers() << we->buttons();
 
@@ -185,6 +188,7 @@ void VolumeButton::wheelEvent(QWheelEvent *we)
     }
 
     qDebug() << "Exiting VolumeButton::wheelEvent()";
+#endif
 }
 
 //tab键焦点移出时同鼠标移出，响应自动隐藏
@@ -213,8 +217,10 @@ bool VolumeButton::eventFilter(QObject *obj, QEvent *e)
         qDebug() << "Button disabled but received mouse event";
 
         if(pMouseEvent->type() == QEvent::MouseButtonPress) {
+#ifndef USE_TEST
            qDebug() << "Mouse press on disabled button, emitting unsupported signal";
            emit sigUnsupported();
+#endif
         }
 
         qDebug() << "Exiting VolumeButton::eventFilter() - returning false";

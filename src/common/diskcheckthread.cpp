@@ -59,18 +59,25 @@ void Diskcheckthread::diskChecking()
 
             int nFd = open(strDiskPath.toLatin1(), O_RDWR | O_NONBLOCK);
             if (nFd && ioctl(nFd, CDROM_DRIVE_STATUS) == CDS_TRAY_OPEN) {
+#ifndef USE_TEST
                 qDebug() << "CD-ROM tray is open for device:" << strDiskPath;
                 bOpen = false;
+#endif
             }
 
             if (!m_mapDisk2Name.contains(strDiskPath) && bOpen) {
+#ifndef USE_TEST
                 qDebug() << "New disk detected:" << strDiskPath << "->" << strDiskName;
                 m_mapDisk2Name.insert(sLine.split(" ").at(0), sLine.split(" ").at(1));
+#endif
             } else if (m_mapDisk2Name.contains(strDiskPath) && m_mapDisk2Name.value(strDiskPath) != strDiskName && bOpen) {
+#ifndef USE_TEST
                 qDebug() << "Disk mount point changed:" << strDiskPath << "from" << m_mapDisk2Name.value(strDiskPath) << "to" << strDiskName;
                 listDisk.removeOne(m_mapDisk2Name.value(strDiskPath));
                 m_mapDisk2Name.insert(sLine.split(" ").at(0), sLine.split(" ").at(1));
+#endif
             } else {
+#ifndef USE_TEST
                 if (bOpen) {
                     qDebug() << "Removing disk from tracking list:" << strDiskName;
                     listDisk.removeOne(strDiskName);
@@ -78,6 +85,7 @@ void Diskcheckthread::diskChecking()
                     qDebug() << "Removing disk from map due to open tray:" << strDiskPath;
                     m_mapDisk2Name.remove(strDiskPath);
                 }
+#endif
             }
             close(nFd);
         }

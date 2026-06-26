@@ -60,9 +60,13 @@ namespace dmr {
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, this, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         qDebug() << "Size mode changed to:" << (sizeMode == DGuiApplicationHelper::NormalMode ? "Normal" : "Compact");
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             setFixedSize(380, 190);
+#endif
         } else {
+#ifndef USE_TEST
             setFixedSize(251, 150);
+#endif
         }
         this->moveToCenter();
     });

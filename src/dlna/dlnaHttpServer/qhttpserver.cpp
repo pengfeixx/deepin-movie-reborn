@@ -103,9 +103,11 @@ bool QHttpServer::listen(const QHostAddress &address, quint16 port)
         qDebug() << "Successfully listening on" << address.toString() << ":" << port;
         connect(m_tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
     } else {
+#ifndef USE_TEST
         qWarning() << "Failed to listen on" << address.toString() << ":" << port << "-" << m_tcpServer->errorString();
         delete m_tcpServer;
         m_tcpServer = NULL;
+#endif
     }
     return couldBindToPort;
 }

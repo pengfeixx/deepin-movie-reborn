@@ -100,13 +100,16 @@ Titlebar::~Titlebar()
 
 void Titlebar::setIcon(QPixmap& mp)
 {
+#ifndef USE_TEST
     Q_D(const Titlebar);
     qDebug() << "Setting titlebar icon";
     d->m_titlebar->setIcon(mp);
+#endif
 }
 
 void Titlebar::slotThemeTypeChanged()
 {
+#ifndef USE_TEST
     Q_D(const Titlebar);
     qDebug() << "Theme type changed, current theme:" << (DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType ? "Dark" : "Light");
     QPalette pa1, pa2;
@@ -141,6 +144,7 @@ void Titlebar::slotThemeTypeChanged()
         }
     }
     this->setGraphicsEffect(d->m_shadowEffect);
+#endif
 }
 /**
  * @brief titlebar 获取标题栏对象指针

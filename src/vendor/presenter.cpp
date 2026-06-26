@@ -76,9 +76,11 @@ void Presenter::initMpris(MprisPlayer *mprisPlayer)
         connect(_mw->engine(), &PlayerEngine::stateChanged, this, &Presenter::slotstateChanged);
         connect(_mw->engine()->getplaylist(), &PlaylistModel::playModeChanged, this, &Presenter::slotplayModeChanged);
     } else {
+#ifndef USE_TEST
         qDebug() << "Connecting Platform_MainWindow signals";
         connect(_platform_mw->engine(), &PlayerEngine::stateChanged, this, &Presenter::slotstateChanged);
         connect(_platform_mw->engine()->getplaylist(), &PlaylistModel::playModeChanged, this, &Presenter::slotplayModeChanged);
+#endif
     }
     connect(mprisPlayer, &MprisPlayer::playRequested, this, &Presenter::slotplay);
     connect(mprisPlayer, &MprisPlayer::pauseRequested, this, &Presenter::slotpause);
@@ -102,8 +104,10 @@ void Presenter::slotplay()
             qDebug() << "Requesting StartPlay action from MainWindow";
             _mw->requestAction(ActionFactory::StartPlay);
         } else {
+#ifndef USE_TEST
             qDebug() << "Requesting StartPlay action from Platform_MainWindow";
             _platform_mw->requestAction(ActionFactory::StartPlay);
+#endif
         }
     }
 }
@@ -115,8 +119,10 @@ void Presenter::slotpause()
         qDebug() << "Requesting TogglePause action from MainWindow";
         _mw->requestAction(ActionFactory::TogglePause);
     } else {
+#ifndef USE_TEST
         qDebug() << "Requesting TogglePause action from Platform_MainWindow";
         _platform_mw->requestAction(ActionFactory::TogglePause);
+#endif
     }
 }
 
@@ -127,8 +133,10 @@ void Presenter::slotplaynext()
         qDebug() << "Requesting GotoPlaylistNext action from MainWindow";
         _mw->requestAction(ActionFactory::GotoPlaylistNext);
     } else {
+#ifndef USE_TEST
         qDebug() << "Requesting GotoPlaylistNext action from Platform_MainWindow";
         _platform_mw->requestAction(ActionFactory::GotoPlaylistNext);
+#endif
     }
 }
 
@@ -139,8 +147,10 @@ void Presenter::slotplayprev()
         qDebug() << "Requesting GotoPlaylistPrev action from MainWindow";
         _mw->requestAction(ActionFactory::GotoPlaylistPrev);
     } else {
+#ifndef USE_TEST
         qDebug() << "Requesting GotoPlaylistPrev action from Platform_MainWindow";
         _platform_mw->requestAction(ActionFactory::GotoPlaylistPrev);
+#endif
     }
 }
 
@@ -153,8 +163,10 @@ void Presenter::slotvolumeRequested(double volume)
         qDebug() << "Requesting ChangeVolume action from MainWindow";
         _mw->requestAction(ActionFactory::ChangeVolume, 1, arg);
     } else {
+#ifndef USE_TEST
         qDebug() << "Requesting ChangeVolume action from Platform_MainWindow";
         _platform_mw->requestAction(ActionFactory::ChangeVolume, 1, arg);
+#endif
     }
 }
 
@@ -165,8 +177,10 @@ void Presenter::slotopenUrlRequested(const QUrl url)
         qDebug() << "Playing URL in MainWindow";
         _mw->play({url.toString()});
     } else {
+#ifndef USE_TEST
         qDebug() << "Playing URL in Platform_MainWindow";
         _platform_mw->play({url.toString()});
+#endif
     }
 }
 
@@ -187,6 +201,7 @@ void Presenter::slotstateChanged()
             break;
         }
     } else {
+#ifndef USE_TEST
         qDebug() << "MPRIS: State changed to:" << _platform_mw->engine()->state();
         switch (_platform_mw->engine()->state()) {
         case PlayerEngine::CoreState::Idle:
@@ -199,6 +214,7 @@ void Presenter::slotstateChanged()
             m_mprisplayer->setPlaybackStatus(Mpris::Paused);
             break;
         }
+#endif
     }
 }
 
@@ -223,6 +239,7 @@ void Presenter::slotloopStatusRequested(Mpris::LoopStatus loopStatus)
             _mw->reflectActionToUI(ActionFactory::ListLoop);
         }
     } else {
+#ifndef USE_TEST
         if (loopStatus == Mpris::LoopStatus::InvalidLoopStatus) {
             qWarning() << "Invalid loop status requested";
             return;
@@ -239,6 +256,7 @@ void Presenter::slotloopStatusRequested(Mpris::LoopStatus loopStatus)
             _platform_mw->requestAction(ActionFactory::ListLoop);
             _platform_mw->reflectActionToUI(ActionFactory::ListLoop);
         }
+#endif
     }
 }
 
@@ -269,6 +287,7 @@ void Presenter::slotvolumeChanged()
             m_mprisplayer->setVolume(pert);
         }
     } else {
+#ifndef USE_TEST
         if (_platform_mw->engine()->muted()) {
             qDebug() << "Setting volume to 0 (muted)";
             m_mprisplayer->setVolume(0.0);
@@ -277,6 +296,7 @@ void Presenter::slotvolumeChanged()
             qDebug() << "Setting volume to:" << pert;
             m_mprisplayer->setVolume(pert);
         }
+#endif
     }
 }
 
@@ -287,8 +307,10 @@ void Presenter::slotseek(qlonglong Offset)
         qDebug() << "Seeking in MainWindow engine";
         _mw->engine()->seekAbsolute(Offset);
     } else {
+#ifndef USE_TEST
         qDebug() << "Seeking in Platform_MainWindow engine";
         _platform_mw->engine()->seekAbsolute(Offset);
+#endif
     }
 }
 
@@ -299,7 +321,9 @@ void Presenter::slotstop()
         qDebug() << "Stopping MainWindow engine";
         _mw->engine()->stop();
     } else {
+#ifndef USE_TEST
         qDebug() << "Stopping Platform_MainWindow engine";
         _platform_mw->engine()->stop();
+#endif
     }
 }

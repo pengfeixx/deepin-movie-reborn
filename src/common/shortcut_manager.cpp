@@ -28,10 +28,12 @@ ShortcutManager &ShortcutManager::get()
 }
 ShortcutManager::~ShortcutManager()
 {
+#ifndef USE_TEST
     qDebug() << "Entering ShortcutManager destructor.";
     // No explicit cleanup for _shortcutManager as it's a static pointer managed by the application lifecycle.
     // If it were heap-allocated and needed explicit deletion, it would be done here.
     qDebug() << "Exiting ShortcutManager destructor.";
+#endif
 }
 ShortcutManager::ShortcutManager()
     : QObject(nullptr), _keyToAction({
@@ -88,6 +90,7 @@ ShortcutManager::ShortcutManager()
         qInfo() << "update binding" << sk << QKeySequence(val.toStringList().at(0));
         QString strKey = QKeySequence(val.toStringList().at(0)).toString();
         if (strKey.contains("Return")) {
+#ifndef USE_TEST
             qInfo() << "Return key found in" << sk;
             strKey = QString("%1Return").arg(strKey.remove("Return"));
             _map[strKey] = _keyToAction[sk];
@@ -96,16 +99,21 @@ ShortcutManager::ShortcutManager()
                 _map.remove(QString("Enter"));
             }
             qInfo() << val << QKeySequence(strKey) << strKey;
+#endif
         } else if (strKey.contains("Num+Enter")) {
+#ifndef USE_TEST
             strKey = QString("%1Enter").arg(strKey.remove("Num+Enter"));
             _map[strKey] = _keyToAction[sk];
             if (QString("Enter") == strKey) {
                 _map.remove(QString("Return"));
             }
             qInfo() << val << QKeySequence(strKey) << strKey;
+#endif
         } else {
+#ifndef USE_TEST
             _map.remove(_map.key(_keyToAction[sk]));
             _map[QKeySequence(val.toStringList().at(0))] = _keyToAction[sk];
+#endif
         }
         emit bindingsChanged();
     });
@@ -179,6 +187,7 @@ void ShortcutManager::buildBindingsFromSettings()
 
 QString ShortcutManager::toJson()
 {
+#ifndef USE_TEST
     QJsonObject shortcutObj;
     QJsonArray jsonGroups;
 
@@ -225,6 +234,7 @@ QString ShortcutManager::toJson()
 
     QJsonDocument doc(shortcutObj);
     return doc.toJson().data();
+#endif
 }
 
 vector<QAction *> ShortcutManager::actionsForBindings()

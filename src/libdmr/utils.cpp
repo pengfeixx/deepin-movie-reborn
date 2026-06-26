@@ -498,7 +498,9 @@ void MoveToCenter(QWidget *w)
         screen = w->screen();
         qDebug() << "Using widget's screen for Qt6.";
     } else {
+#ifndef USE_TEST
         qDebug() << "Using primary screen for Qt6.";
+#endif
     }
     QRect r = screen->availableGeometry();
     qDebug() << "Using QScreen for Qt6. Available geometry:" << r;
@@ -832,8 +834,10 @@ void switchToDefaultSink()
         int indx = path.lastIndexOf("/");
         path = path.mid(indx + 1, path.size() - indx); //最后一个'/'，然后移出Sink关键字
         if (path.size() > 9) {
+#ifndef USE_TEST
             inputIndex = path.remove(0, 9).toInt();
             //break;
+#endif
         } else
             return;
 
@@ -856,14 +860,18 @@ void switchToDefaultSink()
     int sinkindex = sinkpath.lastIndexOf("/");
     sinkpath = sinkpath.mid(sinkindex + 1, sinkpath.size() - sinkindex);//最后一个'/'
     if (sinkpath.size() > 4) {
+#ifndef USE_TEST
         sinkindex = sinkpath.remove(0, 4).toInt();
+#endif
     } else
         return;
 
     qInfo() <<"default sink: " << sinkindex << "\tcurrent sink: " << curSinkIndex << "\tsink input index: " << inputIndex;
 
     if (curSinkIndex == sinkindex) {
+#ifndef USE_TEST
         return;
+#endif
     }
     QProcess proc;
     QStringList sList;
@@ -950,7 +958,9 @@ QString ConvertLinglongPathForPlayback(const QString &path)
 
     // 检测原始路径是否存在
     if (QFile::exists(path)) {
+#ifndef USE_TEST
         return path;
+#endif
     }
 
     // 不存在，尝试加上 /run/host/rootfs 前缀
@@ -958,8 +968,10 @@ QString ConvertLinglongPathForPlayback(const QString &path)
     const QString linglongPath = kLinglongHostRootfs + path;
 
     if (QFile::exists(linglongPath)) {
+#ifndef USE_TEST
         qWarning() << "[Linglong] Convert for playback:" << path << "->" << linglongPath;
         return linglongPath;
+#endif
     }
 
     // 如果加上前缀还是不存在，返回原始路径
@@ -975,9 +987,11 @@ QString ConvertLinglongPathForFM(const QString &path)
     static const QString kLinglongHostRootfs = "/run/host/rootfs";
 
     if (path.startsWith(kLinglongHostRootfs)) {
+#ifndef USE_TEST
         const QString convertedPath = path.mid(kLinglongHostRootfs.length());
         qDebug() << "[Linglong] Convert for FM:" << path << "->" << convertedPath;
         return convertedPath;
+#endif
     }
 
     return path;

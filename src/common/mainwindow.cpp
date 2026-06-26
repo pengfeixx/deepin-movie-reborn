@@ -160,18 +160,24 @@ static QString ElideText(const QString &sText, const QSize &size,
         const QString &sTmpText = sText.mid(line.textStart(), line.textLength());
 
         if (sTmpText.indexOf('\n')) {
+#ifndef USE_TEST
             qDebug() << "Newline character found in current line segment, adding line height.";
             nHeight += nLineHeight;
+#endif
         }
 
         sElideText += sTmpText;
         line = textLayout.createLine();
 
         if (line.isValid()) {
+#ifndef USE_TEST
             sElideText.append("\n");
             qDebug() << "Appended newline. Next line valid.";
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Last line processed. No more valid lines.";
+#endif
         }
     }
 
@@ -215,8 +221,10 @@ static QWidget *createDecodeOptionHandle(QObject *pObj)
 
     pSettingOption->connect(pSettingOption, &DSettingsOption::dataChanged, [=](const QString &dataType, QVariant value){
         if (dataType == "items") {
+#ifndef USE_TEST
             combobox->clear();
             combobox->addItems(value.toStringList());
+#endif
         }
     });
 
@@ -255,8 +263,10 @@ static QWidget *createVoOptionHandle(QObject *pObj)
 
     pSettingOption->connect(pSettingOption, &DSettingsOption::dataChanged, [=](const QString &dataType, QVariant value){
         if (dataType == "items") {
+#ifndef USE_TEST
             combobox->clear();
             combobox->addItems(value.toStringList());
+#endif
         }
     });
 
@@ -299,8 +309,10 @@ static QWidget *createEffectOptionHandle(QObject *pObj)
 
     pSettingOption->connect(pSettingOption, &DSettingsOption::dataChanged, [=](const QString &dataType, QVariant value){
         if (dataType == "items") {
+#ifndef USE_TEST
             combobox->clear();
             combobox->addItems(value.toStringList());
+#endif
         }
     });
 
@@ -373,7 +385,9 @@ static QWidget *createSelectableLineEditOptionHandle(QObject *pObj)
 
         if (sName.size() && sName[0] == '~')
         {
+#ifndef USE_TEST
             sName.replace(0, 1, QDir::homePath());
+#endif
         }
 
         QFileInfo fi(sName);
@@ -389,11 +403,13 @@ static QWidget *createSelectableLineEditOptionHandle(QObject *pObj)
                 return false;
             }
         } else {
+#ifndef USE_TEST
             if (dir.cdUp()) {
                 QFileInfo ch(dir.path());
                 if (!ch.isReadable() || !ch.isWritable())
                     return false;
             }
+#endif
         }
 
         return true;
@@ -408,12 +424,16 @@ static QWidget *createSelectableLineEditOptionHandle(QObject *pObj)
         QString sName = "/data/source/deepin-movie-reborn/movie/DMovie";
 #endif
         if (validate(sName, false)) {
+#ifndef USE_TEST
             pSettingOption->setValue(sName);
             sNameLast = sName;
+#endif
         }
         QFileInfo fileinfo(sName);
         if ((!fileinfo.isReadable() || !fileinfo.isWritable()) && !sName.isEmpty()) {
+#ifndef USE_TEST
             pPrompt->show();
+#endif
         }
     });
 
@@ -430,7 +450,9 @@ static QWidget *createSelectableLineEditOptionHandle(QObject *pObj)
         if (!validate(pLineEdit->text(), false)) {
             QFileInfo fn(dir.path());
             if ((!fn.isReadable() || !fn.isWritable()) && !name.isEmpty()) {
+#ifndef USE_TEST
                 pPrompt->show();
+#endif
             }
         }
         if (!pLineEdit->lineEdit()->hasFocus()) {
@@ -439,10 +461,14 @@ static QWidget *createSelectableLineEditOptionHandle(QObject *pObj)
                 pLineEdit->setText(pn);
                 sNameLast = name;
             } else if (pn == sElideText) {
+#ifndef USE_TEST
                 pLineEdit->setText(sElideText);
+#endif
             } else {
+#ifndef USE_TEST
                 pSettingOption->setValue(sNameLast);
                 pLineEdit->setText(nmls);
+#endif
             }
         }
     });
@@ -529,8 +555,10 @@ public:
 
     void setEnabled(bool bEnable)
     {
+#ifndef USE_TEST
         qDebug() << "Entering MainWindowEventListener setEnabled";
         m_bEnabled = bEnable;
+#endif
     }
 
 protected:
@@ -556,8 +584,10 @@ protected:
                         m_pMainWindow->playlist()->resetFocusAttribute(bFocusAttribute);
                     }
                 } else {
+#ifndef USE_TEST
                     qDebug() << "is mini mode,return true";
                     return true;
+#endif
                 }
             }
             break;
@@ -710,8 +740,10 @@ set_cursor:
 #endif
 
                 if (qApp->mouseButtons() == Qt::LeftButton) {
+#ifndef USE_TEST
                     qDebug() << "updateGeometry";
                     updateGeometry(mouseCorner, pMouseEvent);
+#endif
                 }
                 lastCornerEdge = mouseCorner;
                 return true;
@@ -721,11 +753,13 @@ skip_set_cursor:
                 lastCornerEdge = mouseCorner = CornerEdge::NoneEdge;
                 return false;
             } else {
+#ifndef USE_TEST
                 if (m_bStartResizing) {
                     qDebug() << "m_bStartResizing";
                     updateGeometry(lastCornerEdge, pMouseEvent);
                     return true;
                 }
+#endif
             }
             break;
         }
@@ -740,6 +774,7 @@ skip_set_cursor:
 private:
     void setLeftButtonPressed(bool bPressed)
     {
+#ifndef USE_TEST
         qDebug() << "setLeftButtonPressed";
         if (m_bLeftButtonPressed == bPressed) {
             qDebug() << "m_bLeftButtonPressed == bPressed,return";
@@ -755,13 +790,16 @@ private:
 
         m_bLeftButtonPressed = bPressed;
         qDebug() << "setLeftButtonPressed finished";
+#endif
     }
 
     void updateGeometry(CornerEdge edge, QMouseEvent *pEvent)
     {
+#ifndef USE_TEST
         qDebug() << "updateGeometry";
         MainWindow *pMainWindow = static_cast<MainWindow *>(parent());
         pMainWindow->updateGeometry(edge, pEvent->globalPos());
+#endif
     }
 
     bool m_bLeftButtonPressed = false;
@@ -923,15 +961,19 @@ MainWindow::MainWindow(QWidget *parent)
         //m_pFullScreenTimeLabel = new QLabel;
         qDebug() << "MovieProgressIndicator and QLabel initialized.";
     } else {
+#ifndef USE_TEST
         qDebug() << "Platform is Mips. Skipping MovieProgressIndicator and QLabel initialization.";
+#endif
     }
 
     if (m_pProgIndicator && m_pFullScreenTimeLabel) {
         qDebug() << "MovieProgressIndicator is valid. Setting visibility and connecting elapsedChanged.";
         m_pProgIndicator->setVisible(false);
         connect(m_pEngine, &PlayerEngine::elapsedChanged, [ = ]() {
+#ifndef USE_TEST
             qDebug() << "PlayerEngine elapsedChanged signal received. Updating movie progress.";
             m_pProgIndicator->updateMovieProgress(m_pEngine->duration(), m_pEngine->elapsed());
+#endif
         });
 
         m_pFullScreenTimeLabel->setAttribute(Qt::WA_TranslucentBackground);
@@ -1020,9 +1062,11 @@ MainWindow::MainWindow(QWidget *parent)
                 emit frameMenuEnable(true);
                 setMusicShortKeyState(true);
             } else {
+#ifndef USE_TEST
                 qDebug() << "Disabling frame menu for audio playback";
                 emit frameMenuEnable(false);
                 setMusicShortKeyState(false);
+#endif
             }
             emit playSpeedMenuEnable(true);
             if (m_nLastCookie > 0) {
@@ -1096,6 +1140,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, this, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             m_pTitlebar->setFixedHeight(50);
             m_pMiniPlayBtn->setIconSize(QSize(30, 30));
             m_pMiniPlayBtn->setFixedSize(QSize(35, 35));
@@ -1103,7 +1148,9 @@ MainWindow::MainWindow(QWidget *parent)
             m_pMiniCloseBtn->setFixedSize(QSize(35, 35));
             m_pMiniQuitMiniBtn->setIconSize(QSize(30, 30));
             m_pMiniQuitMiniBtn->setFixedSize(QSize(35, 35));
+#endif
         } else {
+#ifndef USE_TEST
             m_pTitlebar->setFixedHeight(40);
             m_pMiniPlayBtn->setIconSize(QSize(19, 19));
             m_pMiniPlayBtn->setFixedSize(QSize(23, 23));
@@ -1111,6 +1158,7 @@ MainWindow::MainWindow(QWidget *parent)
             m_pMiniCloseBtn->setFixedSize(QSize(23, 23));
             m_pMiniQuitMiniBtn->setIconSize(QSize(19, 19));
             m_pMiniQuitMiniBtn->setFixedSize(QSize(23, 23));
+#endif
         }
     });
 
@@ -1208,6 +1256,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&Settings::get(), &Settings::refreshDecode, this, &MainWindow::onRefreshDecode,Qt::DirectConnection);
     connect(&Settings::get(), &Settings::showTimeFullScreenChanged, this, [&](const QString &key, const QVariant &value) {
         if(value.isValid()) {
+#ifndef USE_TEST
             m_bShowTime = value.toBool();
             setProperty("showTimeFullScreen", value);
             //The X86 platform draws on GiWidget, and the MIPS platform does not need to draw
@@ -1217,6 +1266,7 @@ MainWindow::MainWindow(QWidget *parent)
                     m_pFullScreenTimeLabel->setVisible(value.toBool());
                 }
             }
+#endif
         }
     },Qt::DirectConnection);
     connect(m_pEngine, &PlayerEngine::onlineStateChanged, this, &MainWindow::checkOnlineState);
@@ -1356,6 +1406,7 @@ bool MainWindow::event(QEvent *pEvent)
         if (windowState() & Qt::WindowMinimized) {   //fix bug 53683
             qDebug() << "Window minimized";
             if (Settings::get().isSet(Settings::PauseOnMinimize)) {
+#ifndef USE_TEST
                 if (m_pEngine && m_pEngine->state() == PlayerEngine::Playing) {
                     qDebug() << "Pausing playback due to minimize";
                     requestAction(ActionFactory::TogglePause);
@@ -1363,15 +1414,18 @@ bool MainWindow::event(QEvent *pEvent)
                 }
                 QList<QAction *> listActs = ActionFactory::get().findActionsByKind(ActionFactory::TogglePlaylist);
                 listActs.at(0)->setChecked(false);
+#endif
             }
         } else if (m_lastWindowState & Qt::WindowMinimized) {
             qDebug() << "Window restored from minimized state";
             if (Settings::get().isSet(Settings::PauseOnMinimize)) {
+#ifndef USE_TEST
                 if (m_bQuitfullscreenflag) {
                     qDebug() << "Resuming playback after restore";
                     requestAction(ActionFactory::TogglePause);
                     m_bQuitfullscreenflag = false;
                 }
+#endif
             }
         }
         onWindowStateChanged();
@@ -1399,10 +1453,12 @@ void MainWindow::onWindowStateChanged()
     //The X86 platform draws on GiWidget, and the MIPS platform does not need to draw
     if (CompositingManager::get().platform() == Platform::Arm64 || CompositingManager::get().platform() == Platform::Alpha) {
         if (m_bShowTime) {
+#ifndef USE_TEST
             bool showIndicator = isFullScreen() && m_pEngine && m_pEngine->state() != PlayerEngine::Idle;
             qDebug() << "Setting progress indicator visibility:" << showIndicator;
             if (m_pProgIndicator)
                 m_pProgIndicator->setVisible(showIndicator);
+#endif
         }
     }
 
@@ -1415,12 +1471,16 @@ void MainWindow::onWindowStateChanged()
     if (!isFullScreen() && !isMaximized()) {
         if (m_bMovieSwitchedInFsOrMaxed || !m_lastRectInNormalMode.isValid()) {
             if (m_bMousePressed || m_bMouseMoved) {
+#ifndef USE_TEST
                 qDebug() << "Delaying resize due to mouse activity";
                 m_bDelayedResizeByConstraint = true;
+#endif
             } else {
+#ifndef USE_TEST
                 qDebug() << "Resizing window immediately";
                 setMinimumSize({0, 0});
                 resizeByConstraints(true);
+#endif
             }
         }
 
@@ -1431,8 +1491,10 @@ void MainWindow::onWindowStateChanged()
 
     if (isMinimized()) {
         if (m_pPlaylist && m_pPlaylist->state() == PlaylistWidget::Opened) {
+#ifndef USE_TEST
             qDebug() << "Closing playlist on minimize";
             m_pPlaylist->togglePopup(false);
+#endif
         }
     }
 }
@@ -1750,6 +1812,7 @@ void MainWindow::reflectActionToUI(ActionFactory::ActionKind actionKind)
             }
             qInfo() << "Selecting audio track, ID:" << nId << "Index:" << nIdx;
         } else if (actionKind == ActionFactory::ActionKind::SelectSubtitle) {
+#ifndef USE_TEST
             nId = m_pEngine->sid();
             for (nIdx = 0; nIdx < pmf.subs.size(); nIdx++) {
                 if (nId == pmf.subs[nIdx]["id"].toInt()) {
@@ -1757,6 +1820,7 @@ void MainWindow::reflectActionToUI(ActionFactory::ActionKind actionKind)
                 }
             }
             qInfo() << "Selecting subtitle track, ID:" << nId << "Index:" << nIdx;
+#endif
         }
 
         auto p = listActs.begin();
@@ -1766,7 +1830,9 @@ void MainWindow::reflectActionToUI(ActionFactory::ActionKind actionKind)
             if (args[0].toInt() == nIdx) {
                 if (!(*p)->isChecked())(*p)->setChecked(true);
             } else {
+#ifndef USE_TEST
                 (*p)->setChecked(false);
+#endif
             }
             (*p)->setEnabled(true);
             ++p;
@@ -1814,6 +1880,7 @@ void MainWindow::reflectActionToUI(ActionFactory::ActionKind actionKind)
 //排列判断(主要针对光驱)
 static bool compareBarData(const QUrl &url1, const QUrl &url2)
 {
+#ifndef USE_TEST
     qDebug() << "compareBarData";
     QString sFileName1 = QFileInfo(url1.path()).fileName();
     QString sFileName2 = QFileInfo(url2.path()).fileName();
@@ -1825,6 +1892,7 @@ static bool compareBarData(const QUrl &url1, const QUrl &url2)
     }
     qDebug() << "compareBarData, return false";
     return false;
+#endif
 }
 
 bool MainWindow::addCdromPath()
@@ -1966,6 +2034,7 @@ void MainWindow::menuItemInvoked(QAction *pAction)
                                 || iter.key() == QKeySequence("Up")
                                 || iter.key() == QKeySequence("Down")) && bIsShortcut) {
                             if (iter.key() == QKeySequence("Up") || iter.key() == QKeySequence("Down")) {
+#ifndef USE_TEST
                                 qDebug() << "iter.key() == QKeySequence(\"Up\") || iter.key() == QKeySequence(\"Down\")";
                                 int key;
                                 if (iter.key() == QKeySequence("Up")) {
@@ -1976,6 +2045,7 @@ void MainWindow::menuItemInvoked(QAction *pAction)
                                     key = Qt::Key_Down;
                                 }
                                 m_pPlaylist->updateSelectItem(key);
+#endif
                             }
                             break;
                         }
@@ -2010,6 +2080,7 @@ bool MainWindow::isActionAllowed(ActionFactory::ActionKind actionKind, bool from
     if (m_bMiniMode) {
         qDebug() << "m_bMiniMode";
         if (fromUI || isShortcut) {
+#ifndef USE_TEST
             switch (actionKind) {
             case ActionFactory::ToggleFullscreen:
             case ActionFactory::TogglePlaylist:
@@ -2025,6 +2096,7 @@ bool MainWindow::isActionAllowed(ActionFactory::ActionKind actionKind, bool from
                 qDebug() << "m_bMiniMode, default";
                 break;
             }
+#endif
         }
     }
 
@@ -2058,8 +2130,10 @@ bool MainWindow::isActionAllowed(ActionFactory::ActionKind actionKind, bool from
             if (bRet) {
                 bRet = bRet && m_pEngine->playlist().count();
                 if (bRet) {
+#ifndef USE_TEST
                     auto pif = m_pEngine->playlist().currentInfo();
                     bRet = bRet && pif.loaded;
+#endif
                 }
             }
             break;
@@ -2115,8 +2189,10 @@ void MainWindow::requestAction(ActionFactory::ActionKind actionKind, bool bFromU
         }
 
         if (addCdromPath() == false) {
+#ifndef USE_TEST
             qInfo() << "Playing DVD from device:" << sDev;
             play({QString("dvd:///%1").arg(sDev)});
+#endif
         }
         break;
     }
@@ -2249,12 +2325,14 @@ void MainWindow::requestAction(ActionFactory::ActionKind actionKind, bool bFromU
 
             // 玲珑环境处理：转换为播放路径
             if (utils::IsLinglongEnvironment()) {
+#ifndef USE_TEST
                 for (int i = 0; i < filename.size(); i++) {
                     const QString convertedPath = utils::ConvertLinglongPathForPlayback(filename[i]);
                     if (convertedPath != filename[i]) {
                         filename[i] = convertedPath;
                     }
                 }
+#endif
             }
         } else {
             qDebug() << "fileDialog.exec() != QDialog::Accepted, break";
@@ -2262,10 +2340,12 @@ void MainWindow::requestAction(ActionFactory::ActionKind actionKind, bool bFromU
         }
         QFileInfo fileInfo(filename[0]);
         if (fileInfo.exists()) {
+#ifndef USE_TEST
             qDebug() << "fileInfo.exists()";
             Settings::get().setGeneralOption("last_open_path", fileInfo.path());
 
             play({filename[0]});
+#endif
         }
         break;
     }
@@ -2276,6 +2356,7 @@ void MainWindow::requestAction(ActionFactory::ActionKind actionKind, bool bFromU
             qDebug() << "m_pEngine->playlist().count() == 0";
             requestAction(ActionFactory::ActionKind::OpenFileList);
         } else {
+#ifndef USE_TEST
             qDebug() << "m_pEngine->playlist().count() != 0";
             if (m_pEngine->state() == PlayerEngine::CoreState::Idle  && m_bIsFree) {
                 qDebug() << "m_pEngine->state() == PlayerEngine::CoreState::Idle  && m_bIsFree";
@@ -2309,6 +2390,7 @@ void MainWindow::requestAction(ActionFactory::ActionKind actionKind, bool bFromU
                     m_pEngine->play();
                 }
             }
+#endif
         }
         break;
     }
@@ -2481,14 +2563,18 @@ void MainWindow::requestAction(ActionFactory::ActionKind actionKind, bool bFromU
         if (m_bMiniMode) {
             qDebug() << "m_bMiniMode";
             if (!bFromUI) {
+#ifndef USE_TEST
                 reflectActionToUI(ActionFactory::ToggleMiniMode);
+#endif
             }
             toggleUIMode();
         } else if (isFullScreen()) {
             qDebug() << "isFullScreen()";
             requestAction(ActionFactory::ToggleFullscreen);
             if (m_pFullScreenTimeLabel && !isFullScreen()) {
+#ifndef USE_TEST
                 m_pFullScreenTimeLabel->close();
+#endif
             }
         } else {
             //当焦点在播放列表上按下Esc键，播放列表收起，焦点回到列表按钮上
@@ -2550,8 +2636,10 @@ void MainWindow::requestAction(ActionFactory::ActionKind actionKind, bool bFromU
             //可能存在更好的方法（全屏后更新toolbox状态），后期修改
             if (!m_pToolbox->getbAnimationFinash())
             {
+#ifndef USE_TEST
                 qDebug() << "!m_pToolbox->getbAnimationFinash(), return";
                 return;
+#endif
             }
             m_bMaximized = isMaximized();  // 记录全屏前是否是最大化窗口
             mipsShowFullScreen();
@@ -2985,13 +3073,17 @@ void MainWindow::requestAction(ActionFactory::ActionKind actionKind, bool bFromU
                 subtitleMatchVideo(filename[0]);
             }
             else {
+#ifndef USE_TEST
                 qDebug() << "ActionFactory::ActionKind::LoadSubtitle, m_pEngine->state() != PlayerEngine::Idle";
                 auto success = m_pEngine->loadSubtitle(QFileInfo(filename[0]));
                 m_pCommHintWid->updateWithMessage(success ? tr("Load successfully") : tr("Load failed"));
+#endif
             }
         } else {
+#ifndef USE_TEST
             qDebug() << "ActionFactory::ActionKind::LoadSubtitle, QFileInfo(filename[0]).exists() == false";
             m_pCommHintWid->updateWithMessage(tr("Load failed"));
+#endif
         }
         break;
     }
@@ -3011,8 +3103,10 @@ void MainWindow::requestAction(ActionFactory::ActionKind actionKind, bool bFromU
         }
         if (m_pEngine->state() == PlayerEngine::Idle && bIsShortcut) {
             if (m_pEngine->getplaylist()->getthreadstate()) {
+#ifndef USE_TEST
                 qInfo() << "Playlist load thread is running, ignoring pause request";
                 break;
+#endif
             }
             requestAction(ActionFactory::StartPlay);
         } else {
@@ -3303,6 +3397,7 @@ void MainWindow::onBurstScreenshot(const QImage &frame, qint64 timestamp)
 
 void MainWindow::startBurstShooting()
 {
+#ifndef USE_TEST
     qDebug() << "Starting burst shooting mode";
     //Repair 40S video corresponding to the corresponding connected screenshot
     if (m_pEngine->duration() <= 40) return;
@@ -3315,6 +3410,7 @@ void MainWindow::startBurstShooting()
 
     connect(m_pEngine, &PlayerEngine::notifyScreenshot, this, &MainWindow::onBurstScreenshot);
     m_pEngine->burstScreenshot();
+#endif
 }
 
 void MainWindow::handleSettings(DSettingsDialog *dsd)
@@ -3341,12 +3437,15 @@ void MainWindow::handleSettings(DSettingsDialog *dsd)
         msgBox.addButton(tr("Restart"), true, DDialog::ButtonType::ButtonWarning);
         msgBox.setOnButtonClickedClose(true);
         if (msgBox.exec() == 1) {
+#ifndef USE_TEST
             qDebug() << "msgBox exec =1";
             saveWindowGeometry();
             Settings::get().settings()->setOption("set.start.crash", "2");
             qApp->exit();
             QProcess::startDetached(qApp->applicationFilePath(), QStringList() << "--restart");
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "msgBox exec !=1";
             if (decodeType != 3) {
                 qDebug() << "decodeType != 3";
@@ -3354,6 +3453,7 @@ void MainWindow::handleSettings(DSettingsDialog *dsd)
             }
             Settings::get().settings()->setOption("base.decode.Decodemode", decodeMode);
             Settings::get().settings()->setOption("base.decode.Videoout", voMode);
+#endif
         }
     } else {
         if (decodeType == 3) {
@@ -3361,6 +3461,7 @@ void MainWindow::handleSettings(DSettingsDialog *dsd)
             int newVoMode = Settings::get().settings()->getOption(QString("base.decode.Videoout")).toInt();
             int newEffectMode = Settings::get().settings()->getOption("base.decode.Effect").toInt();
             if (newEffectMode != effectMode || newVoMode != voMode || newDecodeMode != decodeMode) {
+#ifndef USE_TEST
                 Settings::get().crashCheck();
                 DDialog msgBox;
                 msgBox.setIcon(QIcon(":/resources/icons/warning.svg"));
@@ -3382,6 +3483,7 @@ void MainWindow::handleSettings(DSettingsDialog *dsd)
                     Settings::get().settings()->setOption("base.decode.Decodemode", decodeMode);
                     Settings::get().settings()->setOption("base.decode.Videoout", voMode);
                 }
+#endif
             }
         }
     }
@@ -3431,6 +3533,7 @@ DSettingsDialog *MainWindow::initSettings()
         dynamic_cast<QWidget*>(videoFrame->parent())->hide();
         dynamic_cast<QWidget*>(decodeFrame->parent())->hide();
     } else {
+#ifndef USE_TEST
         qDebug() << "decodeType == 3";
         if (utils::check_wayland_env()) {
             qDebug() << "utils::check_wayland_env()";
@@ -3442,6 +3545,7 @@ DSettingsDialog *MainWindow::initSettings()
             dynamic_cast<QWidget*>(decodeFrame->parent())->show();
             dynamic_cast<QWidget*>(decodeFrame)->setEnabled(true);
         }
+#endif
     }
 
     connect(&Settings::get(), &Settings::setDecodeModel, this, [=](QString key, QVariant value){
@@ -3467,6 +3571,7 @@ DSettingsDialog *MainWindow::initSettings()
                 dynamic_cast<QWidget*>(videoFrame->parent())->hide();
                 dynamic_cast<QWidget*>(decodeFrame->parent())->hide();
             } else {
+#ifndef USE_TEST
                 qDebug() << "decodeType == 3";
                 if (utils::check_wayland_env()) {
                     qDebug() << "utils::check_wayland_env()";
@@ -3484,6 +3589,7 @@ DSettingsDialog *MainWindow::initSettings()
                     dynamic_cast<QWidget*>(videoFrame->parent())->show();
                     dynamic_cast<QWidget*>(decodeFrame->parent())->show();
                 }
+#endif
             }
         }
     }, Qt::DirectConnection);
@@ -3529,15 +3635,19 @@ void MainWindow::play(const QList<QString> &listFiles)
         qDebug() << "Playing DVD content";
         m_dvdUrl = QUrl(listFiles[0]);
         if (!m_pEngine->addPlayFile(m_dvdUrl)) {
+#ifndef USE_TEST
             auto msg = QString(tr("Cannot play the disc"));
             m_pCommHintWid->updateWithMessage(msg);
             qDebug() << "Cannot play the disc";
             return;
+#endif
         } else {
+#ifndef USE_TEST
             // todo: Disable toolbar buttons
             auto msg = QString(tr("Reading DVD files..."));
             m_pDVDHintWid->updateWithMessage(msg, true);
             qDebug() << "Reading DVD files...";
+#endif
         }
 
         m_pEngine->playByName(m_dvdUrl);
@@ -3571,7 +3681,9 @@ void MainWindow::play(const QList<QString> &listFiles)
         QtConcurrent::run(m_pEngine, &PlayerEngine::addPlayFs, lstDir);
 #else
         QtConcurrent::run([this, lstDir]() {
+#ifndef USE_TEST
             m_pEngine->addPlayFs(lstDir);
+#endif
         });
 #endif
     } else {
@@ -3582,6 +3694,7 @@ void MainWindow::play(const QList<QString> &listFiles)
 
 void MainWindow::slotFinishedAddFiles(QList<QUrl> lstValid)
 {
+#ifndef USE_TEST
     qDebug() << "slotFinishedAddFiles";
     if(lstValid.count() > 0 && !m_bHaveFile) {
         qDebug() << "lstValid.count() > 0 && !m_bHaveFile";
@@ -3593,6 +3706,7 @@ void MainWindow::slotFinishedAddFiles(QList<QUrl> lstValid)
     }
     //The disposal is false here to prevent the introduction of the folder from blocking
     m_bHaveFile = false;
+#endif
 }
 
 void MainWindow::updateProxyGeometry()
@@ -3625,11 +3739,15 @@ void MainWindow::updateProxyGeometry()
             qDebug() << "DTKWIDGET_CLASS_DSizeMode";
     if (DGuiApplicationHelper::instance()->sizeMode() == DGuiApplicationHelper::CompactMode) {
         if (m_pPlaylist && m_pPlaylist->state() == PlaylistWidget::State::Opened && !utils::check_wayland_env()) {
+#ifndef USE_TEST
             rfs = QRect(5, height() - (TOOLBOX_SPACE_HEIGHT + TOOLBOX_DSIZEMODE_HEIGHT) - rect().top() - 5,
                         rect().width() - 10, (TOOLBOX_SPACE_HEIGHT + TOOLBOX_DSIZEMODE_HEIGHT + 7));
+#endif
         } else {
+#ifndef USE_TEST
             rfs = QRect(5, height() - TOOLBOX_DSIZEMODE_HEIGHT - rect().top() - 5,
                         rect().width() - 10, TOOLBOX_DSIZEMODE_HEIGHT);
+#endif
         }
         mircastPoint.setX(5 + rect().width() - 10);
         mircastPoint.setY(height() - TOOLBOX_DSIZEMODE_HEIGHT - rect().top() - 5);
@@ -3724,6 +3842,7 @@ void MainWindow::suspendToolsWindow()
         if (isFullScreen()) {
             qDebug() << "isFullScreen()";
             if (qApp->focusWindow() == this->windowHandle()) {
+#ifndef USE_TEST
                 qDebug() << "qApp->focusWindow() == this->windowHandle()";
                 static QCursor blankCursor;
                 if (blankCursor.shape() != Qt::BlankCursor) {
@@ -3733,9 +3852,12 @@ void MainWindow::suspendToolsWindow()
                     qApp->setOverrideCursor(blankCursor);
                     qDebug() << "set blank cursor";
                 }
+#endif
             } else {
+#ifndef USE_TEST
                 qDebug() << "qApp->focusWindow() != this->windowHandle()";
                 qApp->setOverrideCursor(Qt::ArrowCursor);
+#endif
             }
         }
 
@@ -3753,6 +3875,7 @@ void MainWindow::suspendToolsWindow()
         m_pTitlebar->setFocus();
         m_pTitlebar->hide();        //隐藏操作应放在设置焦点后
     } else {
+#ifndef USE_TEST
         qDebug() << "!m_bMiniMode";
         if (m_autoHideTimer.isActive()) {
             qDebug() << "m_autoHideTimer.isActive()";
@@ -3762,6 +3885,7 @@ void MainWindow::suspendToolsWindow()
         m_pMiniPlayBtn->hide();
         m_pMiniCloseBtn->hide();
         m_pMiniQuitMiniBtn->hide();
+#endif
     }
 }
 
@@ -3790,9 +3914,11 @@ void MainWindow::resumeToolsWindow()
             m_pToolbox->show();
             qDebug() << "m_pToolbox->show()";
         } else {
+#ifndef USE_TEST
             qDebug() << "m_bTouchChangeVolume";
             m_pToolbox->hide();
             qDebug() << "m_pToolbox->hide()";
+#endif
         }
     } else {
 	    //迷你模式根据半屏模式显示控件
@@ -3940,6 +4066,7 @@ void MainWindow::onRefreshDecode()
 
 void MainWindow::my_setStayOnTop(const QWidget *pWidget, bool bOn)
 {
+#ifndef USE_TEST
     qDebug() << "my_setStayOnTop";
     Q_ASSERT(pWidget);
 
@@ -3972,6 +4099,7 @@ void MainWindow::my_setStayOnTop(const QWidget *pWidget, bool bOn)
                SubstructureRedirectMask | SubstructureNotifyMask,
                &xev);
     XFlush(display);
+#endif
 }
 
 void MainWindow::slotmousePressTimerTimeOut()
@@ -4063,6 +4191,7 @@ void MainWindow::slotFileLoaded()
         qDebug() << "utils::check_wayland_env() && windowState() == Qt::WindowNoState && m_lastRectInNormalMode.isValid()";
         const MovieInfo &mi = pEngine->playlist().currentInfo().mi;
         if (!m_bMiniMode) {
+#ifndef USE_TEST
             qDebug() << "!m_bMiniMode";
             if (utils::check_wayland_env()) {
                 qDebug() << "utils::check_wayland_env()";
@@ -4072,6 +4201,7 @@ void MainWindow::slotFileLoaded()
                 qDebug() << "!utils::check_wayland_env()";
                 m_lastRectInNormalMode.setSize({mi.width, mi.height});
             }
+#endif
         }
     }
     this->resizeByConstraints();
@@ -4242,10 +4372,13 @@ void MainWindow::checkErrorMpvLogsChanged(const QString sPrefix, const QString s
         //please refer to other places to modify
         //powered by xxxxp
         if (m_pEngine->playlist().currentInfo().mi.title.isEmpty()) {
+#ifndef USE_TEST
             qDebug() << "m_pEngine->playlist().currentInfo().mi.title.isEmpty()";
             m_pCommHintWid->updateWithMessage(tr("Parse failed"));
             m_pEngine->playlist().remove(m_pEngine->playlist().current());
+#endif
         } else {
+#ifndef USE_TEST
             if (m_nRetryTimes < 10) {
                 qDebug() << "m_nRetryTimes < 10";
                 m_nRetryTimes++;
@@ -4256,6 +4389,7 @@ void MainWindow::checkErrorMpvLogsChanged(const QString sPrefix, const QString s
                 m_pCommHintWid->updateWithMessage(tr("Invalid file"));
                 m_pEngine->playlist().remove(m_pEngine->playlist().current());
             }
+#endif
         }
     } else if (sErrorMessage.toLower().contains(QString("moov atom not found"))) {
         qDebug() << "sErrorMessage.toLower().contains(QString(\"moov atom not found\")";
@@ -4401,18 +4535,23 @@ void MainWindow::wheelEvent(QWheelEvent *pEvent)
     }
 
     if (m_pToolbox->isInMircastWidget(pEvent->position().toPoint())) {
+#ifndef USE_TEST
         qDebug() << "m_pToolbox->isInMircastWidget(pEvent->position().toPoint())";
         return;
+#endif
     }
 #endif
 
     if (m_pPlaylist && m_pPlaylist->state() == PlaylistWidget::Opened) {
+#ifndef USE_TEST
         qDebug() << "m_pPlaylist && m_pPlaylist->state() == PlaylistWidget::Opened";
         pEvent->ignore();
         return;
+#endif
     }
 
     if (pEvent->buttons() == Qt::NoButton && pEvent->modifiers() == Qt::NoModifier && m_pToolbox->getVolSliderIsHided()) {
+#ifndef USE_TEST
         qDebug() << "pEvent->buttons() == Qt::NoButton && pEvent->modifiers() == Qt::NoModifier && m_pToolbox->getVolSliderIsHided()";
         m_iAngleDelta = pEvent->angleDelta().y() ;
         if( m_iAngleDelta < -240){     //对滚轮距离出现异常值时的约束处理
@@ -4423,6 +4562,7 @@ void MainWindow::wheelEvent(QWheelEvent *pEvent)
             m_iAngleDelta = 120;
         }
         requestAction(pEvent->angleDelta().y() > 0 ? ActionFactory::VolumeUp : ActionFactory::VolumeDown);
+#endif
     }
 }
 
@@ -4531,10 +4671,12 @@ void MainWindow::resizeByConstraints(bool bForceCentered)
         r.setSize(vidoeSize);
         r.moveTopLeft({(geom.width() - r.width()) / 2, (geom.height() - r.height()) / 2});
         if (utils::check_wayland_env()) {
+#ifndef USE_TEST
             qDebug() << "utils::check_wayland_env()";
             this->setGeometry(r);
             this->move(r.x(), r.y());
             this->resize(r.width(), r.height());
+#endif
         }
     } else {
         if (utils::check_wayland_env()) {
@@ -4594,7 +4736,9 @@ void MainWindow::resizeEvent(QResizeEvent *pEvent)
     qInfo() << __func__ << geometry();
     if (utils::check_wayland_env()) {
         if (m_pToolbox) {
+#ifndef USE_TEST
             m_pToolbox->setFixedWidth(this->width() - 10);
+#endif
         }
     }
     if (m_pProgIndicator && isFullScreen()) {
@@ -4639,14 +4783,18 @@ void MainWindow::resizeEvent(QResizeEvent *pEvent)
 #endif
         QRect rt = rect();
         if(rt.height() >= nScreenHeight-100){
+#ifndef USE_TEST
             m_pMiniPlayBtn->setVisible(false);
             m_pMiniCloseBtn->setVisible(false);
             m_pMiniQuitMiniBtn->setVisible(false);
             m_pToolbox->setVisible(false);
+#endif
         }else {
+#ifndef USE_TEST
             m_pMiniPlayBtn->setVisible(m_bMiniMode);
             m_pMiniCloseBtn->setVisible(m_bMiniMode);
             m_pMiniQuitMiniBtn->setVisible(m_bMiniMode);
+#endif
         }
     }
     //判断屏幕可用坐标与应用的geometry是否有交集，没有就移动到屏幕可见位置
@@ -4766,8 +4914,10 @@ void MainWindow::capturedMouseReleaseEvent(QMouseEvent *pEvent)
         m_bDelayedResizeByConstraint = false;
 
         QTimer::singleShot(0, [ = ]() {
+#ifndef USE_TEST
             this->setMinimumSize({0, 0});
             this->resizeByConstraints(true);
+#endif
         });
     }
 
@@ -4876,11 +5026,15 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *pEvent)
         qDebug() << "!m_bMiniMode && !m_bInBurstShootMode";
         m_delayedMouseReleaseTimer.stop();
         if (m_pEngine->state() == PlayerEngine::Idle) {
+#ifndef USE_TEST
             qDebug() << "m_pEngine->state() == PlayerEngine::Idle";
             requestAction(ActionFactory::StartPlay);
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "m_pEngine->state() != PlayerEngine::Idle";
             requestAction(ActionFactory::ToggleFullscreen, false, {}, true);
+#endif
         }
         pEvent->accept();
         s_bAfterDblClick = true;
@@ -4906,13 +5060,16 @@ void MainWindow::mouseMoveEvent(QMouseEvent *pEvent)
     if (m_bIsTouch && isFullScreen()) { //全屏时才触发滑动改变音量和进度的操作
         if (qAbs(ptDelta.x()) > qAbs(ptDelta.y())
                 && m_pEngine->state() != PlayerEngine::CoreState::Idle) {
+#ifndef USE_TEST
             qDebug() << "qAbs(ptDelta.x()) > qAbs(ptDelta.y()) && m_pEngine->state() != PlayerEngine::CoreState::Idle";
             m_bTouchChangeVolume = false;
             m_pToolbox->updateProgress(ptDelta.x());     //改变进度条显示
             this->m_posMouseOrigin = ptCurr;
             m_bProgressChanged = true;
             return;
+#endif
         } else if (qAbs(ptDelta.x()) < qAbs(ptDelta.y())) {
+#ifndef USE_TEST
             qDebug() << "qAbs(ptDelta.x()) < qAbs(ptDelta.y())";
             if (ptDelta.y() > 0) {
                 m_bTouchChangeVolume = true;
@@ -4924,6 +5081,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *pEvent)
 
             this->m_posMouseOrigin = ptCurr;
             return;
+#endif
         }
     }
     qDebug() << "QWidget::mouseMoveEvent(pEvent)";
@@ -4949,8 +5107,10 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *pEvent)
     if (utils::check_wayland_env()) {
         qDebug() << "utils::check_wayland_env()";
         if (windowHandle()->property("_d_dwayland_staysontop").toBool() != m_bWindowAbove) {
+#ifndef USE_TEST
             m_bWindowAbove = !m_bWindowAbove;
             reflectActionToUI(ActionFactory::WindowAbove);
+#endif
         }
     } else {
         qDebug() << "!utils::check_wayland_env()";
@@ -4982,6 +5142,7 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *pEvent)
         QList<ActionFactory::ActionKind> lstActId;
         lstActId << ActionFactory::ToggleFullscreen << ActionFactory::ToggleMiniMode << ActionFactory::WindowAbove;
         for(ActionFactory::ActionKind id: lstActId) {
+#ifndef USE_TEST
             QList<QAction *> listActs;
             listActs = ActionFactory::get().findActionsByKind(id);
             if(listActs.size()<=0) {
@@ -4990,6 +5151,7 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *pEvent)
             for(QAction *act: listActs) {
                 act->setEnabled(false);
             }
+#endif
         }
         //倍速播放、画面、声音、字幕、截图
         emit frameMenuEnable(false);
@@ -5096,6 +5258,7 @@ void MainWindow::subtitleMatchVideo(const QString &sFileName)
         // Select the current subtitle display
         const PlayingMovieInfo &pmf = m_pEngine->playingMovieInfo();
         for (const SubtitleInfo &sub : pmf.subs) {
+#ifndef USE_TEST
             if (sub["external"].toBool()) {
                 QString path = sub["external-filename"].toString();
                 if (path == subfileInfo.canonicalFilePath()) {
@@ -5103,6 +5266,7 @@ void MainWindow::subtitleMatchVideo(const QString &sFileName)
                     break;
                 }
             }
+#endif
         }
     } else {
         qDebug() << "!vfileInfo.exists()";
@@ -5190,8 +5354,10 @@ QString MainWindow::lastOpenedPath()
         lastPath = QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);
         QDir newLastDir(lastPath);
         if (!newLastDir.exists()) {
+#ifndef USE_TEST
             qDebug() << "!newLastDir.exists()";
             lastPath = QDir::currentPath();
+#endif
         }
     }
 
@@ -5244,6 +5410,7 @@ void MainWindow::paintEvent(QPaintEvent *pEvent)
 
 void MainWindow::toggleUIMode()
 {
+#ifndef USE_TEST
     qInfo() << "Toggling UI mode, current mini mode:" << m_bMiniMode;
     // 对于最大化的窗口，需要先恢复至正常窗口，再进行迷你模式的操作
     // 因为有个时序的问题，避免窗口跳动引起用户不适，所以加入hide和show操作
@@ -5534,10 +5701,12 @@ void MainWindow::toggleUIMode()
     }
 
     m_bStartMini = false;
+#endif
 }
 
 void MainWindow::miniButtonClicked(const QString &id)
 {
+#ifndef USE_TEST
     qDebug() << "miniButtonClicked";
     if (id == "play") {
         qDebug() << "id == play";
@@ -5555,6 +5724,7 @@ void MainWindow::miniButtonClicked(const QString &id)
         qDebug() << "id == quit_mini";
         requestAction(ActionFactory::ActionKind::ToggleMiniMode);
     }
+#endif
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *ev)
@@ -5599,17 +5769,23 @@ void MainWindow::dropEvent(QDropEvent *pEvent)
             
             if(m_pEngine->state() != PlayerEngine::CoreState::Idle
                     && m_pEngine->playlist().currentInfo().mi.isRawFormat()) {
+#ifndef USE_TEST
                 qInfo() << "Subtitle loading skipped: Playing raw format";
                 return;
+#endif
             }
             else if (m_pEngine->state() == PlayerEngine::Idle) {
+#ifndef USE_TEST
                 qInfo() << "Attempting to match subtitle with video";
                 subtitleMatchVideo(urls.first().toLocalFile());
+#endif
             }
             else {
+#ifndef USE_TEST
                 qInfo() << "Loading subtitle for current video";
                 bool succ = m_pEngine->loadSubtitle(fileInfo);
                 m_pCommHintWid->updateWithMessage(succ ? tr("Load successfully") : tr("Load failed"));
+#endif
             }
             return;
         }
@@ -5682,6 +5858,7 @@ void MainWindow::sleepStateChanged(bool bSleep)
             dconfig->setValue("PausedOnPlay", state == PlayerEngine::Paused);  // 休眠时会暂停，所以这里恒为true
 
             if (state != PlayerEngine::Idle) {
+#ifndef USE_TEST
                 Settings::get().settings()->setOption("set.start.crash", "2");
                 m_pEngine->savePlaybackPosition();
                 // 保存窗口几何信息用于重启后恢复
@@ -5689,6 +5866,7 @@ void MainWindow::sleepStateChanged(bool bSleep)
                 saveVolume();
                 qInfo() << "restart deepin-movie and continue --- " << movieInfo.filePath;
                 QProcess::startDetached(qApp->applicationFilePath(), QStringList() << "--restart" << movieInfo.filePath);
+#endif
             }
         }
     }
@@ -5924,6 +6102,7 @@ void MainWindow::setMusicShortKeyState(bool bState)
 
 void MainWindow::onSysLockState(QString, QVariantMap key2value, QStringList)
 {
+#ifndef USE_TEST
     qDebug() << "onSysLockState";
     if (m_bStartSleep) {
         m_bStateInLock = true;       //如果进入了休眠状态后进入锁屏,则默认执行了暂停操作
@@ -5936,20 +6115,25 @@ void MainWindow::onSysLockState(QString, QVariantMap key2value, QStringList)
         m_bStateInLock = false;
         // requestAction(ActionFactory::TogglePause); //需求变更，唤醒后不恢复播放
     }
+#endif
 }
 
 void MainWindow::slotProperChanged(QString, QVariantMap key2value, QStringList)
 {
+#ifndef USE_TEST
     qInfo() << __func__ << key2value;
     if (key2value.value("Active").value<bool>() && m_pEngine->state() == PlayerEngine::CoreState::Playing) {
         m_pEngine->seekAbsolute(m_pEngine->elapsed());
     }
+#endif
 }
 
 void MainWindow::slotUnsupported()
 {
+#ifndef USE_TEST
     qDebug() << "slotUnsupported";
     m_pCommHintWid->updateWithMessage(tr("The action is not supported in this video"));
+#endif
 }
 
 void MainWindow::slotInvalidFile(QString strFileName)
@@ -6041,12 +6225,15 @@ void MainWindow::updateGeometry(CornerEdge edge, QPoint pos)
         qDebug() << "bKeepRatio";
         QSize size = engine()->videoSize();
         if (size.isEmpty()) {
+#ifndef USE_TEST
             const auto &MovieInfo = engine()->playlist().currentInfo().mi;
             size = QSize(MovieInfo.width, MovieInfo.height);
+#endif
         }
 
         ratio = size.width() / static_cast<qreal>(size.height());
         switch (edge) {
+#ifndef USE_TEST
         case CornerEdge::TopLeftCorner:
             qDebug() << "CornerEdge::TopLeftCorner";
             geom.setLeft(pos.x());
@@ -6077,6 +6264,7 @@ void MainWindow::updateGeometry(CornerEdge edge, QPoint pos)
             break;
         default:
             break;
+#endif
         }
     } else {
         switch (edge) {
@@ -6136,9 +6324,11 @@ void MainWindow::updateGeometry(CornerEdge edge, QPoint pos)
 
 void MainWindow::setPresenter(Presenter *pPresenter)
 {
+#ifndef USE_TEST
     qDebug() << "setPresenter";
     m_pPresenter = pPresenter;
     m_pPresenter->slotvolumeChanged();
+#endif
 }
 
 int MainWindow::getDisplayVolume()
@@ -6163,7 +6353,9 @@ MainWindow::~MainWindow()
         int nCur = 0;
         nCur = m_pEngine->playlist().current();
         if (nCur >= 0) {
+#ifndef USE_TEST
             Settings::get().setInternalOption("playlist_pos", nCur);
+#endif
         }
     }
     m_pEngine->savePlaybackPosition();
@@ -6220,6 +6412,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::saveWindowGeometry()
 {
+#ifndef USE_TEST
     if (!m_bMiniMode) {
         QRect geometry = this->geometry();
         Settings::get().setInternalOption("window_state", QVariant(this->windowState()));
@@ -6229,10 +6422,12 @@ void MainWindow::saveWindowGeometry()
         Settings::get().setInternalOption("window_y", geometry.y());
         qInfo() << "Saved window geometry before restart:" << geometry;
     }
+#endif
 }
 
 void MainWindow::restoreWindowGeometry()
 {
+#ifndef USE_TEST
     // 从配置中恢复窗口几何信息
     Qt::WindowState state = Settings::get().internalOption("window_state").value<Qt::WindowState>();
     int width = Settings::get().internalOption("window_width").toInt();
@@ -6272,10 +6467,12 @@ void MainWindow::restoreWindowGeometry()
 
         qInfo() << "Restored window geometry:" << QRect(x, y, width, height);
     }
+#endif
 }
 
 void MainWindow::saveVolume()
 {
+#ifndef USE_TEST
     int volume = Settings::get().internalOption("global_volume").toInt();
     int displayVolume = m_nDisplayVolume > 100 ? 100 : m_nDisplayVolume;
     if (displayVolume != volume) {
@@ -6292,6 +6489,7 @@ void MainWindow::saveVolume()
         Settings::get().setInternalOption("global_volume", displayVolume);
         loop.exec();
     }
+#endif
 }
 
 #include "mainwindow.moc"

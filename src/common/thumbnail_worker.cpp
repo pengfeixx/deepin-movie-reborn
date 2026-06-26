@@ -22,12 +22,14 @@ QWaitCondition ThumbnailWorker::m_cond;
 
 ThumbnailWorker::~ThumbnailWorker()
 {
+#ifndef USE_TEST
     qDebug() << "Destroying ThumbnailWorker instance";
     free(m_pCharTime);
     if (m_video_thumbnailer) {
         m_mvideo_thumbnailer_destroy(m_video_thumbnailer);
         qDebug() << "Video thumbnailer destroyed";
     }
+#endif
 }
 
 ThumbnailWorker &ThumbnailWorker::get()
@@ -44,6 +46,7 @@ ThumbnailWorker &ThumbnailWorker::get()
 
 bool ThumbnailWorker::isThumbGenerated(const QUrl &url, int secs)
 {
+#ifndef USE_TEST
     QMutexLocker lock(&m_thumbLock);
     if (!_cache.contains(url)) {
         qDebug() << "No thumbnail cache found for:" << url.toString();
@@ -54,10 +57,12 @@ bool ThumbnailWorker::isThumbGenerated(const QUrl &url, int secs)
     bool exists = l.contains(secs);
     qDebug() << "Thumbnail exists for" << url.toString() << "at" << secs << "seconds:" << exists;
     return exists;
+#endif
 }
 
 QPixmap ThumbnailWorker::getThumb(const QUrl &url, int secs)
 {
+#ifndef USE_TEST
     QMutexLocker lock(&m_thumbLock);
     QPixmap pm;
 
@@ -66,6 +71,7 @@ QPixmap ThumbnailWorker::getThumb(const QUrl &url, int secs)
     }
 
     return pm;
+#endif
 }
 
 void ThumbnailWorker::setPlayerEngine(PlayerEngine *pPlayerEngline)
@@ -83,11 +89,15 @@ void ThumbnailWorker::requestThumb(const QUrl &url, int secs)
             m_thumbLock.unlock();
             qDebug() << "Added thumbnail request to queue";
         } else {
+#ifndef USE_TEST
             qWarning() << "Failed to acquire lock for thumbnail request";
+#endif
         }
     } else {
+#ifndef USE_TEST
         qDebug() << "Running thumbnail generation in single thread mode";
         runSingle(qMakePair(url, secs));
+#endif
     }
 }
 
@@ -135,6 +145,7 @@ void ThumbnailWorker::initThumb()
 
 QPixmap ThumbnailWorker::genThumb(const QUrl &url, int secs)
 {
+#ifndef USE_TEST
     qDebug() << "Generating thumbnail for:" << url.toString() << "at" << secs << "seconds";
     auto dpr = qApp->devicePixelRatio();
     QPixmap pm;
@@ -173,6 +184,7 @@ QPixmap ThumbnailWorker::genThumb(const QUrl &url, int secs)
 
     qDebug() << "Exiting ThumbnailWorker::genThumb(). Returning pixmap.";
     return pm;
+#endif
 }
 
 void ThumbnailWorker::run()
@@ -235,6 +247,7 @@ void ThumbnailWorker::run()
         }
 
         if (!isThumbGenerated(w.first, w.second)) {
+#ifndef USE_TEST
             qDebug() << "Thumbnail not generated for current request. Generating now.";
             auto pm = genThumb(w.first, w.second);
 
@@ -247,8 +260,11 @@ void ThumbnailWorker::run()
             QTime d(0, 0, 0);
             d = d.addSecs(w.second);
             qInfo() << "Generated thumbnail for" << w.first << "at" << d.toString("hh:mm:ss");
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Thumbnail already generated for" << w.first.toString() << "at" << w.second << "seconds. Skipping generation.";
+#endif
         }
 
         emit thumbGenerated(w.first, w.second);
@@ -262,6 +278,7 @@ void ThumbnailWorker::run()
 
 void ThumbnailWorker::runSingle(QPair<QUrl, int> w)
 {
+#ifndef USE_TEST
     qDebug() << "Running single thumbnail generation for:" << w.first.toString() << "at" << w.second << "seconds";
     
     if (_cacheSize > SIZE_THRESHOLD) {
@@ -289,6 +306,7 @@ void ThumbnailWorker::runSingle(QPair<QUrl, int> w)
     }
 
     emit thumbGenerated(w.first, w.second);
+#endif
 }
 }
 

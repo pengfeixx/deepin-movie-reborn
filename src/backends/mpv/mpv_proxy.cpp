@@ -162,7 +162,9 @@ MpvProxy::~MpvProxy()
         delete m_pMpvGLwidget;
         m_pMpvGLwidget = nullptr;
     } else {
+#ifndef USE_TEST
         qDebug() << "DEBUG: Compositing manager not composited. Skipping MpvGLwidget deletion.";
+#endif
     }
     qDebug() << "DEBUG: Exiting MpvProxy destructor.";
 }
@@ -217,9 +219,13 @@ void MpvProxy::initGpuInfoFuns()
     m_gpuInfo = reinterpret_cast<void *>(mpvLibrary.resolve("vdp_Iter_decoderInfo"));
     m_gpuInfoVo = reinterpret_cast<const char* (*)(void)>(mpvLibrary.resolve("gpuinfo_get_vo"));
     if (m_gpuInfo && m_gpuInfoVo) {
+#ifndef USE_TEST
         qInfo() << "GPU info functions initialized successfully";
+#endif
     } else {
+#ifndef USE_TEST
         qWarning() << "GPU info functions initialized error";
+#endif
     }
 }
 
@@ -290,10 +296,14 @@ void MpvProxy::firstInit()
             m_pMpvGLwidget->show();
             qDebug() << "DEBUG: MPV GL widget layout configured and shown."; // Log after showing widget
         } else {
+#ifndef USE_TEST
             qDebug() << "DEBUG: Compositing manager not composited. Skipping MPV GL widget creation."; // Add log for else branch
+#endif
         }
     } else {
+#ifndef USE_TEST
         qCritical() << "CRITICAL: Failed to create MPV handle. Initialization aborted."; // Add critical log if m_creat is null
+#endif
     }
 
     m_bInited = true;
@@ -328,6 +338,7 @@ void MpvProxy::initSetting()
 
 void MpvProxy::updateRoundClip(bool roundClip)
 {
+#ifndef USE_TEST
     qDebug() << "DEBUG: Entering MpvProxy::updateRoundClip. Round clip:" << roundClip;
 #ifdef __x86_64__
     m_pMpvGLwidget->toggleRoundedClip(roundClip);
@@ -336,6 +347,7 @@ void MpvProxy::updateRoundClip(bool roundClip)
     qDebug() << "DEBUG: Skipping rounded clip toggle for non-x86_64 platform.";
 #endif
     qDebug() << "DEBUG: Exiting MpvProxy::updateRoundClip.";
+#endif
 }
 
 mpv_handle *MpvProxy::mpv_init()
@@ -366,9 +378,11 @@ mpv_handle *MpvProxy::mpv_init()
             qDebug() << "DEBUG: MPV log level set to verbose (all=status).";
 
         } else {
+#ifndef USE_TEST
             my_set_property(pHandle, "msg-level", "all=v");
             m_requestLogMessage(pHandle, "v");
             qDebug() << "DEBUG: MPV log level set to debug (all=v).";
+#endif
         }
         break;
     default:
@@ -440,10 +454,14 @@ mpv_handle *MpvProxy::mpv_init()
         if (!forced.isEmpty()) {
             QStringList valids {"vaapi-egl", "vaapi-glx", "vdpau-glx", "auto"};
             if (valids.contains(forced)) {
+#ifndef USE_TEST
                 interop = forced;
                 qDebug() << "DEBUG: Forced interop value:" << forced;
+#endif
             } else {
+#ifndef USE_TEST
                 qWarning() << "WARNING: Invalid forced interop value:" << forced << ". Falling back to detected interop.";
+#endif
             }
         }
 
@@ -452,7 +470,9 @@ mpv_handle *MpvProxy::mpv_init()
             qInfo() << "-------- set gpu-hwdec-interop = " << interop
                     << (forced.isEmpty() ? "[detected]" : "[forced]");
         } else {
+#ifndef USE_TEST
             qInfo() << "-------- gpu-hwdec-interop is disabled by user";
+#endif
         }
     }
 #endif
@@ -499,7 +519,9 @@ mpv_handle *MpvProxy::mpv_init()
             cpuInfo.close();
             qDebug() << "DEBUG: CPU info checked. Is virtual machine:" << isVirtualMachine;
         } else {
+#ifndef USE_TEST
             qWarning() << "WARNING: Failed to open /proc/cpuinfo.";
+#endif
         }
 
         //2.1.1景嘉微
@@ -511,8 +533,10 @@ mpv_handle *MpvProxy::mpv_init()
             my_set_property(pHandle, "vo", "xv,x11");
             my_set_property(pHandle, "hwdec", "auto");
             if (utils::check_wayland_env()) {
+#ifndef USE_TEST
                 qDebug() << "DEBUG: Wayland environment detected. Setting wid for CSMCORE.";
                 my_set_property(pHandle, "wid", m_pParentWidget->winId());
+#endif
             }
             m_sInitVo = "xv,x11";
         }  else if (X100GPU.exists() && X100VPU.exists()) {
@@ -579,7 +603,9 @@ mpv_handle *MpvProxy::mpv_init()
             QDir jmdir(QLibraryInfo::location(QLibraryInfo::LibrariesPath) +QDir::separator() +"mwv207");
             if(jmdir.exists())
             {
+#ifndef USE_TEST
                 jmflag=true;
+#endif
             }
         }
         //TODO(xxxxpengfei)：暂未处理intel集显情况
@@ -597,18 +623,24 @@ mpv_handle *MpvProxy::mpv_init()
             comStr = comStr.right(3).left(2);
             int version = comStr.toInt();
             qDebug() << "DEBUG: apt policy output version:" << version;
-            if (version >= 21) { // bug: 285669
+            if (version >= 21) {
+#ifndef USE_TEST // bug: 285669
                 my_set_property(pHandle, "hwdec", "vaapi");
                 my_set_property(pHandle, "vo", "gpu");
                 m_sInitVo = "gpu";
+#endif
             } else if (version >= 10) {
+#ifndef USE_TEST
                 my_set_property(pHandle, "hwdec", "vaapi");
                 my_set_property(pHandle, "vo", "vaapi");
                 m_sInitVo = "vaapi";
+#endif
             } else {
+#ifndef USE_TEST
                 qDebug() << "DEBUG: Version < 10. Setting vo to gpu.";
                 my_set_property(pHandle, "vo", "gpu");
                 m_sInitVo = "gpu";
+#endif
             }
         }
 #endif
@@ -650,9 +682,11 @@ mpv_handle *MpvProxy::mpv_init()
         if (m_gpuInfoVo) {
             const char* vo = m_gpuInfoVo();
             if (vo && vo[0] != '\0') {
+#ifndef USE_TEST
                 qInfo() << "gpuinfo recommended vo:" << vo;
                 my_set_property(pHandle, "vo", vo);
                 m_sInitVo = vo;
+#endif
             }
         }
     } else if (DecodeMode::HARDWARE == m_decodeMode) { //3.设置硬解
@@ -661,17 +695,25 @@ mpv_handle *MpvProxy::mpv_init()
         QFileInfo X100VPU("/dev/vxd0");
         //2.1.1景嘉微
         if (utils::isJjwGPUPresent()) {
+#ifndef USE_TEST
             qDebug() << "DEBUG: Jingjiawei GPU detected. Checking driver existence.";
             configureJjwGPU(pHandle, true);
+#endif
         } else if (X100GPU.exists() && X100VPU.exists()) {
+#ifndef USE_TEST
             qDebug() << "DEBUG: X100 GPU and VPU detected. Setting hwdec to ftomx-copy and vo to gpu.";
             my_set_property(m_handle, "hwdec", "ftomx-copy");
             my_set_property(m_handle, "vo", "gpu");
+#endif
         } else if (utils::check_wayland_env() && isSpecialHWHardware()) {
+#ifndef USE_TEST
             my_set_property(pHandle, "hwdec", "omx-copy");
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "DEBUG: No special GPU detected. Setting hwdec to auto.";
             my_set_property(pHandle, "hwdec", "auto");
+#endif
         }
 
 #if defined (__sw_64__)
@@ -699,32 +741,40 @@ mpv_handle *MpvProxy::mpv_init()
         }
 #endif
         if (QFile::exists("/usr/local/ctyun/clink/Mirror/Registry/Default") && !QFile::exists("/dev/mtgpu.0")) {
+#ifndef USE_TEST
             qDebug() << "DEBUG: Ctyun clink registry detected. Setting hwdec to no and vo to x11.";
             my_set_property(pHandle, "hwdec", "no");
             my_set_property(pHandle, "vo", "x11");
             my_set_property(pHandle, "video-sync", "desync");
             my_set_property(pHandle, "profile", "sw-fast");
             m_sInitVo = "x11";
+#endif
         }
 
         QDir innodir("/sys/bus/platform/drivers/inno-codec");
         if ( innodir.exists()) {
+#ifndef USE_TEST
             qDebug() << "DEBUG: Inno-codec driver detected. Setting vo to gpu,x11.";
             my_set_property(pHandle, "vo", "gpu,x11");
             m_sInitVo = "gpu,x11";
+#endif
         }
         if (QFile::exists("/sys/bus/pci/drivers/ljmcore")) {
+#ifndef USE_TEST
             qDebug() << "DEBUG: Ljmcore driver detected. Setting vo to vaapi and hwdec to vaapi.";
             my_set_property(pHandle, "vo", "vaapi");
             my_set_property(pHandle, "hwdec", "vaapi");
             m_sInitVo = "vaapi";
+#endif
         }
 
         if (CompositingManager::get().isSpecialControls()) {
+#ifndef USE_TEST
             qDebug() << "DEBUG: Special controls detected. Setting hwdec to vaapi and vo to vaapi.";
             my_set_property(pHandle, "hwdec", "vaapi");
             my_set_property(pHandle, "vo", "vaapi");
             m_sInitVo = "vaapi";
+#endif
         }
     }
 
@@ -744,8 +794,10 @@ mpv_handle *MpvProxy::mpv_init()
         qDebug() << "DEBUG: Not MIPS, composited. Setting vo to libmpv, vd-lavc-dr to no, gpu-sw to on.";
 #endif
     } else {
+#ifndef USE_TEST
         my_set_property(pHandle, "wid", m_pParentWidget->winId());
         qDebug() << "DEBUG: Not composited. Setting wid to parent widget's winId.";
+#endif
     }
 
 
@@ -831,8 +883,10 @@ mpv_handle *MpvProxy::mpv_init()
 #ifdef MWV206_0
             //景嘉微显卡目前只支持vo=xv，等日后升级代码需要酌情修改。
             if (!utils::isJjwGPUPresent()) {
+#ifndef USE_TEST
                 my_set_property(pHandle, p->first.toUtf8().constData(), p->second.toUtf8().constData());
                 qInfo() << "apply" << p->first << "=" << p->second;
+#endif
             }
 #else
             my_set_property(pHandle, p->first.toUtf8().constData(), p->second.toUtf8().constData());
@@ -864,10 +918,13 @@ mpv_handle *MpvProxy::mpv_init()
         m_pConfig->insert("hwdec", decodeMode);
         qDebug() << "DEBUG: hwdec set to:" << decodeMode;
         if (decodeMode == "vaapi-copy") {
+#ifndef USE_TEST
             my_set_property(pHandle, "vd-queue-enable","yes");
+#endif
         }
 
         if (!CompositingManager::get().composited()) {
+#ifndef USE_TEST
             qDebug() << "DEBUG: Not composited, setting vo from custom decode settings.";
             int voIndex = Settings::get().settings()->getOption(QString("base.decode.Videoout")).toInt();
             auto voOpt = Settings::get().settings()->option("base.decode.Videoout");
@@ -875,8 +932,11 @@ mpv_handle *MpvProxy::mpv_init()
             voMode = voMode.isEmpty() ? "auto" : voMode;
             m_pConfig->insert("vo", voMode);
             qDebug() << "DEBUG: vo set to:" << voMode;
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "DEBUG: Composited, skipping vo setting from custom decode settings.";
+#endif
         }
     } else {
         qDebug() << "DEBUG: Custom decode settings disabled.";
@@ -1045,6 +1105,7 @@ bool isSpecialHWHardware()
         return false;
 
     if (Unknown == s_DevType) {
+#ifndef USE_TEST
         s_DevType = NotHWDev;
 
         QProcess process;
@@ -1075,6 +1136,7 @@ bool isSpecialHWHardware()
         }
 
         qInfo() << QString("Detect HW device, current type is: %1").arg((IsHWDev == s_DevType) ? "true" : "false");
+#endif
     }
 
     return bool(s_DevType == IsHWDev);
@@ -1124,6 +1186,7 @@ int MpvProxy::getDecodeProbeValue(const QString sDecodeName)
 
 void MpvProxy::configureJjwGPU(mpv_handle *pHandle, bool setInitVo)
 {
+#ifndef USE_TEST
     QDir sdir(QLibraryInfo::location(QLibraryInfo::LibrariesPath) + QDir::separator() + "mwv206"); //判断是否安装核外驱动
     QDir jmdir(QLibraryInfo::location(QLibraryInfo::LibrariesPath) + QDir::separator() + "mwv207");
     QString jjwPath = utils::getJjwGPUPath();
@@ -1145,6 +1208,7 @@ void MpvProxy::configureJjwGPU(mpv_handle *pHandle, bool setInitVo)
 
     if (setInitVo)
         m_sInitVo = vo;
+#endif
 }
 
 void MpvProxy::handle_mpv_events()
@@ -1408,7 +1472,9 @@ bool MpvProxy::loadSubtitle(const QFileInfo &fileInfo)
 
     // Delay update to allow mpv to process the sub-add command and avoid deadlock
     QTimer::singleShot(100, this, [this]() {
+#ifndef USE_TEST
         updatePlayingMovieInfo();
+#endif
     });
 
     // by settings this flag, we can match the corresponding sid change and save it
@@ -1680,8 +1746,10 @@ void MpvProxy::refreshDecode()
             my_set_property_async(m_handle, "vo", "libmpv", 0);
             m_sInitVo = "libmpv";
         } else if (!utils::check_wayland_env()) {
+#ifndef USE_TEST
             my_set_property_async(m_handle, "vo", "x11", 0);
             m_sInitVo = "x11";
+#endif
         }
     } else if (DecodeMode::AUTO == m_decodeMode) {//2.设置自动
         //2.1 特殊格式
@@ -1699,7 +1767,9 @@ void MpvProxy::refreshDecode()
                 QDir jmdir(QLibraryInfo::location(QLibraryInfo::LibrariesPath) +QDir::separator() +"mwv207");
                 if(jmdir.exists())
                 {
+#ifndef USE_TEST
                     jmflag=true;
+#endif
                 }
                 isSoftCodec = codec.toLower().contains("mpeg4") ? true : isSoftCodec;
             }
@@ -1719,7 +1789,9 @@ void MpvProxy::refreshDecode()
             if (CompositingManager::get().isZXIntgraphics() && !jmflag) {
                 isSoftCodec = codec.contains("vp8") && (currentInfo.mi.width > 1920 || currentInfo.mi.height > 1080);
                 if (isSoftCodec) {
+#ifndef USE_TEST
                     qWarning() << "Using SoftCodec because of codec OR size";
+#endif
                 }
             }
 #endif
@@ -1727,16 +1799,20 @@ void MpvProxy::refreshDecode()
                 PlaylistModel *playMode = dynamic_cast<PlayerEngine *>(m_pParentWidget)->getplaylist();
                 QVariant varPixfmt = playMode->property(currentInfo.mi.filePath.toUtf8());
                 if(varPixfmt.isValid() && varPixfmt.toInt() == AV_PIX_FMT_YUV444P) {
+#ifndef USE_TEST
                     isSoftCodec = true;
                     qWarning() << "Using SoftCodec because of format";
+#endif
                 }
                 auto codec = currentInfo.mi.videoCodec();
                 if (    codec.toLower().contains("mpeg") ||
                         codec.toLower().contains("h264")  ||
                         codec.toLower().contains("hevc")  ||
                         codec.toLower().contains("vp")) {
+#ifndef USE_TEST
                     my_set_property_async(m_handle, "hwdec-codecs", codec.toLower(), 0);
                     isSoftCodec = false;
+#endif
                 }
             }
         if (isSoftCodec) {
@@ -1750,10 +1826,14 @@ void MpvProxy::refreshDecode()
                 PlayItemInfo currentInfo = dynamic_cast<PlayerEngine *>(m_pParentWidget)->getplaylist()->currentInfo();
                 auto codec = currentInfo.mi.videoCodec();
                 if (codec.toLower().contains("mpeg2") || codec.toLower().contains("mpeg4")) {
+#ifndef USE_TEST
                     qWarning() << "Using SoftCodec because of codec";
                     my_set_property_async(m_handle, "hwdec", "no", 0);
+#endif
                 } else if (utils::isJjwGPUPresent()) {
+#ifndef USE_TEST
                     configureJjwGPU(m_handle);
+#endif
                 }
 #ifdef _LIBDMR_
     my_set_property_async(m_handle, "vo", "libmpv,opengl-cb", 0);
@@ -1798,8 +1878,10 @@ void MpvProxy::refreshDecode()
 
         if (!CompositingManager::get().composited()) {
             if (CompositingManager::get().isSpecialControls()) {
+#ifndef USE_TEST
                 my_set_property_async(m_handle, "hwdec","vaapi", 0);
                 my_set_property_async(m_handle, "vo","vaapi", 0);
+#endif
             }
         }
     } else if (DecodeMode::HARDWARE == m_decodeMode) { //3.设置硬解
@@ -1876,8 +1958,10 @@ void MpvProxy::refreshDecode()
         if(utils::check_wayland_env()){
             QVariant varPixfmt = playMode->property(currentInfo.mi.filePath.toUtf8());
             if(varPixfmt.isValid() && varPixfmt.toInt() == AV_PIX_FMT_YUV444P) {
+#ifndef USE_TEST
                 qWarning() << "Using SoftCodec because of format";
                 my_set_property_async(m_handle, "hwdec","no", 0);
+#endif
             }
         }
         auto codec = currentInfo.mi.videoCodec();
@@ -1896,14 +1980,17 @@ void MpvProxy::refreshDecode()
         QMap<QString, QString>::iterator iter = m_pConfig->begin();
         while (iter != m_pConfig->end()) {
             if (iter.key().contains(QString("hwdec"))) {
+#ifndef USE_TEST
                 my_set_property_async(m_handle, iter.key(), iter.value(), 0);
                 break;
+#endif
             }
             iter++;
         }
     }
 #ifndef _LIBDMR_
     else if (Settings::get().settings()->getOption(QString("base.decode.select")).toInt() == DecodeMode::CUSTOM) {
+#ifndef USE_TEST
         int decodeIndex = Settings::get().settings()->getOption(QString("base.decode.Decodemode")).toInt();
         auto decodeModeOpt = Settings::get().settings()->option("base.decode.Decodemode");
         QString decodeMode = decodeModeOpt.data()->data("items").toStringList()[decodeIndex];
@@ -1917,6 +2004,7 @@ void MpvProxy::refreshDecode()
             voMode = voMode.isEmpty() ? "auto" : voMode;
             m_pConfig->insert("vo", voMode);
         }
+#endif
     }
 #endif
 }
@@ -1998,7 +2086,9 @@ void MpvProxy::play()
         bAudio = pEngine->currFileIsAudio();
         qInfo() << "Current file info - Raw format:" << bRawFormat << "Audio only:" << bAudio;
     } else {
+#ifndef USE_TEST
         qDebug() << "No playlist items or player engine not available";
+#endif
     }
 
     // Use async property setting to avoid deadlock during short video playback
@@ -2047,9 +2137,11 @@ void MpvProxy::play()
         QDir sdir(QLibraryInfo::location(QLibraryInfo::LibrariesPath) +QDir::separator() +"mwv206");
         QString sCodec = pEngine->playlist().currentInfo().mi.videoCodec();
         if(sdir.exists() && sCodec.contains("avs2", Qt::CaseInsensitive)) {
+#ifndef USE_TEST
             qWarning() << "Using SoftCodec because of codec (async)";
             my_set_property_async(m_handle, "hwdec", "no", 0);
             my_set_property_async(m_handle, "vo", "gpu,x11,xv", 0);
+#endif
         }
     }
 
@@ -2086,7 +2178,9 @@ void MpvProxy::play()
         auto ext_subs = MovieConfiguration::get().getListByUrl(_file, ConfigKnownKey::ExternalSubs);
         for (const auto &sub : ext_subs) {
             if (!QFile::exists(sub)) {
+#ifndef USE_TEST
                 MovieConfiguration::get().removeFromListUrl(_file, ConfigKnownKey::ExternalSubs, sub);
+#endif
             } else {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 loadSubtitle(sub);
@@ -2193,12 +2287,14 @@ void MpvProxy::burstScreenshot()
 
 qint64 MpvProxy::nextBurstShootPoint()
 {
+#ifndef USE_TEST
     auto next = m_listBurstPoints[static_cast<int>(m_nBurstStart++)];
     if (next >= duration()) {
         next = duration() - 5;
     }
 
     return next;
+#endif
 }
 
 int MpvProxy::volumeCorrection(int displayVol)
@@ -2233,7 +2329,9 @@ int MpvProxy::my_set_property(mpv_handle *pHandle, const QString &sName, const Q
     {
         if(!CompositingManager::isCanHwdec())
         {
+#ifndef USE_TEST
             sValue = "no";
+#endif
         }
     }
 #endif
@@ -2274,11 +2372,13 @@ int MpvProxy::my_set_property_async(mpv_handle *pHandle, const QString &sName, c
 
 QVariant MpvProxy::my_get_property_variant(mpv_handle *pHandle, const QString &sName)
 {
+#ifndef USE_TEST
     mpv_node node;
     if (m_getProperty(pHandle, sName.toUtf8().data(), MPV_FORMAT_NODE, &node) < 0)
         return QVariant();
     my_node_autofree f(&node);
     return node_to_variant(&node);
+#endif
 }
 
 QVariant MpvProxy::my_command(mpv_handle *pHandle, const QVariant &args)
@@ -2400,6 +2500,7 @@ void MpvProxy::stepBurstScreenshot()
 //    int tries = 10;
     qDebug() << "Waiting for seek to complete";
     while (true) {
+#ifndef USE_TEST
         mpv_event *pEvent = m_waitEvent(m_handle, 0.005);
         if (pEvent->event_id == MPV_EVENT_NONE)
             continue;
@@ -2413,16 +2514,19 @@ void MpvProxy::stepBurstScreenshot()
             qInfo() << "seek finished (end of file)" << elapsed();
             break;
         }
+#endif
     }
 
     qDebug() << "Taking screenshot at position" << elapsed();
     QImage img = takeOneScreenshot();
     if (img.isNull()) {
+#ifndef USE_TEST
         qWarning() << "Failed to take screenshot at position" << elapsed();
         emit notifyScreenshot(img, elapsed());
         stopBurstScreenshot();
         qDebug() << "Exiting MpvProxy::stepBurstScreenshot() - screenshot failed";
         return;
+#endif
     }
 
     emit notifyScreenshot(img, elapsed());
@@ -2608,6 +2712,7 @@ void MpvProxy::updatePlayingMovieInfo()
             titleInfo["selected"] = t["selected"];
             titleInfo["title"] = t["title"];
             if (t["title"].toString().size() == 0) {
+#ifndef USE_TEST
                 qDebug() << "Subtitle track has no title, determining appropriate title";
                 if (t["lang"].isValid() && t["lang"].toString().size() && t["lang"].toString() != "und") {
                     qDebug() << "Using language code as subtitle title";
@@ -2616,6 +2721,7 @@ void MpvProxy::updatePlayingMovieInfo()
                     qDebug() << "Using [internal] as subtitle title";
                     titleInfo["title"] = tr("Internal");
                 }
+#endif
             }
             m_movieInfo.subs.append(titleInfo);
         }

@@ -121,6 +121,7 @@ BurstScreenshotsDialog::BurstScreenshotsDialog(const PlayItemInfo &PlayItemInfo)
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, this, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         qDebug() << "Size mode changed signal received. New sizeMode:" << sizeMode;
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             qDebug() << "Switching to NormalMode. Adjusting sizes.";
             m_pTitlebar->setFixedSize(590, 50);
             setFixedSize(600, 700);
@@ -128,7 +129,9 @@ BurstScreenshotsDialog::BurstScreenshotsDialog(const PlayItemInfo &PlayItemInfo)
             m_pGrid->setVerticalSpacing(15);
             m_pSaveBtn->setFixedSize(70, 30);
             layout()->setContentsMargins(10, 0, 10, 15);
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Switching to CompactMode. Adjusting sizes.";
             m_pTitlebar->setFixedSize(389, 33);
             setFixedSize(396, 462);
@@ -136,6 +139,7 @@ BurstScreenshotsDialog::BurstScreenshotsDialog(const PlayItemInfo &PlayItemInfo)
             m_pGrid->setVerticalSpacing(10);
             m_pSaveBtn->setFixedSize(46, 20);
             layout()->setContentsMargins(7, 0, 7, 10);
+#endif
         }
         this->moveToCenter();
         qDebug() << "Dialog moved to center.";
@@ -233,7 +237,9 @@ void BurstScreenshotsDialog::updateWithFrames(const QList<QPair<QImage, qint64>>
  */
 int BurstScreenshotsDialog::exec()
 {
+#ifndef USE_TEST
     return DAbstractDialog::exec();
+#endif
 }
 
 /**
@@ -241,6 +247,7 @@ int BurstScreenshotsDialog::exec()
  */
 void BurstScreenshotsDialog::savePoster()
 {
+#ifndef USE_TEST
     qDebug() << "Entering BurstScreenshotsDialog::savePoster().";
     qDebug() << "Saving poster";
     //参考设计图
@@ -254,6 +261,7 @@ void BurstScreenshotsDialog::savePoster()
     DAbstractDialog::accept();
     qDebug() << "Dialog accepted.";
     qDebug() << "Exiting BurstScreenshotsDialog::savePoster().";
+#endif
 }
 
 /**
@@ -262,8 +270,10 @@ void BurstScreenshotsDialog::savePoster()
  */
 QString BurstScreenshotsDialog::savedPosterPath()
 {
+#ifndef USE_TEST
     qDebug() << "Getting saved poster path:" << m_sPosterPath;
     return m_sPosterPath;
+#endif
 }
 
 }

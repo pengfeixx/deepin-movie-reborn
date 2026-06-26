@@ -77,6 +77,7 @@ MovieWidget::~MovieWidget()
 
 void MovieWidget::startPlaying()
 {
+#ifndef USE_TEST
     qDebug() << "Starting playback - Current state:" << m_state;
     if (m_state == PlayState::STATE_STOP) {
         m_nRotate = 0;
@@ -86,6 +87,7 @@ void MovieWidget::startPlaying()
     m_pTimer->start();
     m_state = PlayState::STATE_PLAYING;
     qDebug() << "Playback started, timer running";
+#endif
 }
 
 void MovieWidget::stopPlaying()
@@ -99,10 +101,12 @@ void MovieWidget::stopPlaying()
 
 void MovieWidget::pausePlaying()
 {
+#ifndef USE_TEST
     qDebug() << "Pausing playback - Current state:" << m_state;
     m_pTimer->stop();
     m_state = PlayState::STATE_PAUSE;
     qDebug() << "Playback paused";
+#endif
 }
 
 void MovieWidget::updateView()
@@ -162,17 +166,23 @@ void MovieWidget::initMember()
 
 void MovieWidget::mousePressEvent(QMouseEvent *pEvent)
 {
+#ifndef USE_TEST
     pEvent->ignore();
+#endif
 }
 
 void MovieWidget::mouseReleaseEvent(QMouseEvent *pEvent)
 {
+#ifndef USE_TEST
     pEvent->ignore();
+#endif
 }
 
 void MovieWidget::mouseMoveEvent(QMouseEvent *pEvent)
 {
+#ifndef USE_TEST
      pEvent->ignore();
+#endif
 }
 
 }

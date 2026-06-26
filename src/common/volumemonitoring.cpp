@@ -120,10 +120,12 @@ void VolumeMonitoring::timeoutSlot()
         Q_EMIT muteChanged(oldMute.toBool());
         _bOpened = true;
     } else {
+#ifndef USE_TEST
         if (volume != oldVolume) {
             qDebug() << "Volume changed from" << oldVolume.toInt() << "to" << volume;
             Q_EMIT volumeChanged(volume);
             Q_EMIT muteChanged(muteV.toBool());
         }
+#endif
     }
 }

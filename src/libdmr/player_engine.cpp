@@ -148,10 +148,12 @@ bool PlayerEngine::isPlayableFile(const QString &name)
         return true;
     }
 
-    if (url.isLocalFile()) {   // 网络文件不提示
+    if (url.isLocalFile()) {
+#ifndef USE_TEST   // 网络文件不提示
         qDebug() << "File is not playable";
         emit sigInvalidFile(QFileInfo(url.toLocalFile()).fileName());
         return false;
+#endif
     }
     qDebug() << "File is not playable";
     return  false;
@@ -265,14 +267,18 @@ void PlayerEngine::onBackendStateChanged()
     if (XDG_SESSION_TYPE == QLatin1String("wayland") ||
             WAYLAND_DISPLAY.contains(QLatin1String("wayland"), Qt::CaseInsensitive)) {
         if (_state == CoreState::Idle) {
+#ifndef USE_TEST
             QPalette pal(qApp->palette());
             this->setAutoFillBackground(true);
             this->setPalette(pal);
+#endif
         } else {
+#ifndef USE_TEST
             QPalette pal(this->palette());
             pal.setColor(QPalette::Window, Qt::black);
             this->setAutoFillBackground(true);
             this->setPalette(pal);
+#endif
         }
     }
     qDebug() << "Exiting onBackendStateChanged function";
@@ -373,11 +379,13 @@ void PlayerEngine::onSubtitlesDownloaded(const QUrl &url, const QList<QString> &
     bool res = false;
 
     for (auto &filename : filenames) {
+#ifndef USE_TEST
         if (true == _current->loadSubtitle(QFileInfo(filename))) {
             res = true;
         } else {
             QFile::remove(filename);
         }
+#endif
     }
 
     emit loadOnlineSubtitlesFinished(url, res);
@@ -401,12 +409,14 @@ bool PlayerEngine::loadSubtitle(const QFileInfo &fi)
     int i = 0;
     for (const auto &sub : pmf.subs) {
         if (sub["external"].toBool()) {
+#ifndef USE_TEST
             auto path = sub["external-filename"].toString();
             if (path == fi.canonicalFilePath()) {
                 qDebug() << "Subtitle already loaded, selecting it";
                 this->selectSubtitle(i);
                 return true;
             }
+#endif
         }
         ++i;
     }
@@ -641,10 +651,12 @@ void PlayerEngine::changehwaccelMode(Backend::hwaccelMode hwaccelMode)
 
 void PlayerEngine::setDecodeModel(const QVariant &value)
 {
+#ifndef USE_TEST
     MpvProxy *pMpv = static_cast<MpvProxy *>(_current);
     if (pMpv) {
         pMpv->setDecodeModel(value);
     }
+#endif
 }
 
 QVariant PlayerEngine::getDecodeModel()
@@ -705,9 +717,12 @@ void PlayerEngine::paintEvent(QPaintEvent *e)
     if (!CompositingManager::get().composited() || utils::check_wayland_env()) {  // wayland下不会进入mainwindow的paintevent函数导致图标未绘制
         qDebug() << "Compositing manager not composited or wayland environment detected.";
         if (_state != Idle && m_bAudio) {
+#ifndef USE_TEST
             qDebug() << "Player is not idle and is audio, filling black rectangle.";
             p.fillRect(rect, QBrush(QColor(0, 0, 0)));
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Player is idle or not audio, drawing icon.";
             qreal dpr = devicePixelRatioF();
             int iconSize = static_cast<int>(130 * dpr);
@@ -725,6 +740,7 @@ void PlayerEngine::paintEvent(QPaintEvent *e)
                 p.fillRect(rect, QBrush(QColor(0, 0, 0)));
                 p.drawPixmap(pos, pix);
             }
+#endif
         }
     } else {
         qDebug() << "Compositing manager is composited and not wayland environment, skipping custom paint.";
@@ -766,8 +782,10 @@ void PlayerEngine::requestPlay(int id)
 #endif
         _current->play();
     } else {
+#ifndef USE_TEST
         // TODO: delete and try next backend?
         qDebug() << "File is not playable, considering next backend or handling error.";
+#endif
     }
 
     QJsonObject obj{
@@ -831,6 +849,7 @@ void PlayerEngine::makeCurrent()
 
 void PlayerEngine::play()
 {
+#ifndef USE_TEST
     qDebug() << "Play requested";
     if (!_current || !_playlist->count()) {
         qWarning() << "Cannot play: no backend or empty playlist";
@@ -848,6 +867,7 @@ void PlayerEngine::play()
         playByName(_playlist->currentInfo().url);
     }
     qDebug() << "Exiting PlayerEngine::play().";
+#endif
 }
 
 void PlayerEngine::prev()
@@ -1066,12 +1086,14 @@ bool PlayerEngine::addPlayFile(const QUrl &url)
 
 QList<QUrl> PlayerEngine::addPlayDir(const QDir &dir)
 {
+#ifndef USE_TEST
     qDebug() << "Adding directory to playlist:" << dir.path();
     QList<QUrl> valids = FileFilter::instance()->filterDir(dir);
     qDebug() << "Found" << valids.size() << "valid files in directory";
 
     struct {
         bool operator()(const QUrl& fi1, const QUrl& fi2) const {
+#ifndef USE_TEST
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             static QRegExp rd("\\d+");
             int pos = 0;
@@ -1122,6 +1144,7 @@ QList<QUrl> PlayerEngine::addPlayDir(const QDir &dir)
             }
             return fileName1.localeAwareCompare(fileName2) < 0;
 #endif
+#endif
         }
     } SortByDigits;
 
@@ -1130,6 +1153,7 @@ QList<QUrl> PlayerEngine::addPlayDir(const QDir &dir)
     _playlist->appendAsync(valids);
 
     return valids;
+#endif
 }
 
 QList<QUrl> PlayerEngine::addPlayFiles(const QList<QUrl> &urls)
@@ -1173,6 +1197,7 @@ QList<QUrl> PlayerEngine::addPlayFiles(const QList<QString> &lstFile)
 
 void PlayerEngine::addPlayFs(const QList<QString> &lstFile)
 {
+#ifndef USE_TEST
     qDebug() << "Enter addPlayFs function";
     QList<QUrl> valids;
     QUrl realUrl;
@@ -1195,6 +1220,7 @@ void PlayerEngine::addPlayFs(const QList<QString> &lstFile)
     blockSignals(false);
     emit finishedAddFiles(addFiles);
     qDebug() << "Exiting addPlayFs function";
+#endif
 }
 
 qint64 PlayerEngine::duration() const
@@ -1350,6 +1376,7 @@ QVariant PlayerEngine::getBackendProperty(const QString &name)
 
 void PlayerEngine::toggleRoundedClip(bool roundClip)
 {
+#ifndef USE_TEST
     qDebug() << "Enter toggleRoundedClip function";
     MpvProxy* pMpvProxy = nullptr;
 
@@ -1360,6 +1387,7 @@ void PlayerEngine::toggleRoundedClip(bool roundClip)
         pMpvProxy->updateRoundClip(roundClip);
     // }
     qDebug() << "Exiting toggleRoundedClip function";
+#endif
 }
 
 bool PlayerEngine::currFileIsAudio()
@@ -1383,8 +1411,10 @@ bool PlayerEngine::currFileIsAudio()
             bAudio = pif.url.isLocalFile() && (pif.mi.width <= 0 && pif.mi.height <= 0);
         }
     } else {
+#ifndef USE_TEST
         qDebug() << "CompositingManager::isMpvExists() else";
         bAudio = isAudioFile(pif.url.toString());
+#endif
     }
 
     qDebug() << "Exiting currFileIsAudio function";

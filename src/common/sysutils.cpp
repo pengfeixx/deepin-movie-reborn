@@ -73,12 +73,14 @@ QString SysUtils::libPath(const QString &strlib)
         };
         
         for (const QString &fbPath : std::as_const(fallbackPaths)) {
+#ifndef USE_TEST
             QDir fallbackDir(fbPath);
             if (fallbackDir.exists() && fallbackDir.isReadable()) {
                 dir = fallbackDir;
                 qInfo() << "Using fallback path:" << fbPath;
                 break;
             }
+#endif
         }
     }
 

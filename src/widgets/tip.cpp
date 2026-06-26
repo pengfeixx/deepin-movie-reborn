@@ -75,8 +75,10 @@ Tip::Tip(const QPixmap &icon, const QString &text, QWidget *parent)
         qDebug() << "No icon provided for tip";
         iconLabel->hide();
     } else {
+#ifndef USE_TEST
         qDebug() << "Setting tip icon with size:" << icon.size();
         iconLabel->setPixmap(icon);
+#endif
     }
 
     d->textLabel = new DLabel(text);
@@ -119,10 +121,12 @@ void Tip::enterEvent(QEvent *e)
 #else
 void Tip::enterEvent(QEnterEvent *e)
 {
+#ifndef USE_TEST
     qDebug() << "Entering enterEvent function";
     hide();
 
     QFrame::enterEvent(e);
+#endif
 }
 #endif
 
@@ -256,13 +260,17 @@ void Tip::paintEvent(QPaintEvent *)
         pt.setPen(QColor(0, 0, 0, 10));
         pt.setBrush(QBrush(QColor(247, 247, 247, transparency)));
     } else if (DGuiApplicationHelper::DarkType == DGuiApplicationHelper::instance()->themeType()) {
+#ifndef USE_TEST
         qDebug() << "DarkType";
         pt.setPen(QColor(255, 255, 255, 10));
         pt.setBrush(QBrush(QColor(42, 42, 42, transparency)));
+#endif
     } else {
+#ifndef USE_TEST
         qDebug() << "OtherType";
         pt.setPen(QColor(0, 0, 0, 10));
         pt.setBrush(QBrush(QColor(247, 247, 247, transparency)));
+#endif
     }
 
     QRect rect = this->rect();

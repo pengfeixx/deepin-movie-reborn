@@ -137,23 +137,31 @@ MircastWidget::MircastWidget(QWidget *mainWindow, void *pEngine)
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, this, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         qDebug() << "Size mode changed signal received. New sizeMode:" << sizeMode;
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             qDebug() << "Switching to NormalMode. Adjusting refresh button size.";
             m_refreshBtn->setFixedSize(24, 24);
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Switching to CompactMode. Adjusting refresh button size.";
             m_refreshBtn->setFixedSize(16, 16);
+#endif
         }
     });
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, topWdiget, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         qDebug() << "Size mode changed signal received for top widget. New sizeMode:" << sizeMode;
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             qDebug() << "Switching top widget to NormalMode.";
             topWdiget->setFixedHeight(40);
             topWdiget->layout()->setContentsMargins(20, 8, 20, 0);
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Switching top widget to CompactMode.";
             topWdiget->setFixedHeight(26);
             topWdiget->layout()->setContentsMargins(20, 4, 20, 0);
+#endif
         }
     });
 #else
@@ -213,14 +221,20 @@ void MircastWidget::seekMircast(int nSec)
     if(m_mircastState != MircastWidget::Screening) return;
     int nSeek = m_nCurAbsTime + nSec;
     if(nSeek < 0) {
+#ifndef USE_TEST
         qDebug() << "Calculated seek time is less than 0, seeking to 0.";
         slotSeekMircast(0);
+#endif
     } else if(nSeek > m_nCurDuration) {
+#ifndef USE_TEST
         qDebug() << "Calculated seek time is greater than current duration, seeking to duration.";
         slotSeekMircast(m_nCurDuration);
+#endif
     } else {
+#ifndef USE_TEST
         qDebug() << "Seeking to calculated time:" << nSeek;
         slotSeekMircast(nSeek);
+#endif
     }
     qDebug() << "Exiting seekMircast().";
 }
@@ -269,8 +283,10 @@ void MircastWidget::slotSearchTimeout()
         updateMircastState(SearchState::NoDevices);
         qDebug() << "Device list is empty, updating state to NoDevices.";
     } else {
+#ifndef USE_TEST
         updateMircastState(SearchState::ListExhibit);
         qDebug() << "Device list is not empty, updating state to ListExhibit.";
+#endif
     }
 
     m_refreshBtn->refreshTimeout();
@@ -340,13 +356,17 @@ void MircastWidget::slotGetPositionInfo(DlnaPositionInfo info)
             }
             m_attempts = 0;
         } else if (info.sAbsTime.toUpper() == "NOT_IMPLEMENTED" && duration == 0) {
+#ifndef USE_TEST
             qDebug() << "Invalid duration, exiting Miracast";
             emit mircastState(MIRCAST_EXIT);
             slotExitMircast();
+#endif
         } else if (m_sTrackURI != m_sLocalUrl) {
+#ifndef USE_TEST
             qDebug() << "Track URI mismatch, exiting Miracast";
             emit mircastState(MIRCAST_EXIT);
             slotExitMircast();
+#endif
         }
         m_nCurAbsTime = absTime;
         m_nCurDuration = timeConversion(info.sTrackDuration);
@@ -358,10 +378,12 @@ void MircastWidget::slotGetPositionInfo(DlnaPositionInfo info)
     if (duration > 0 && absTime > 0) {
         m_mircastState = MircastState::Screening;
         if (m_connectDevice.deviceState == Connecting) {
+#ifndef USE_TEST
             m_connectDevice.deviceState = MircastState::Screening;
 
             qDebug() << "Miracast connection successful";
             emit mircastState(MIRCAST_SUCCEEDED, m_connectDevice.miracastDevice.name);
+#endif
         }
         ItemWidget *item = m_listWidget->currentItemWidget();
         if(item)
@@ -378,15 +400,21 @@ void MircastWidget::slotGetPositionInfo(DlnaPositionInfo info)
             m_mircastTimeOut.stop();
             if (playMode == PlaylistModel::SinglePlay ||
                     (playMode == PlaylistModel::OrderPlay && model->current() == (model->count() - 1))) {
+#ifndef USE_TEST
                 emit mircastState(MIRCAST_EXIT);
                 slotExitMircast();
+#endif
             } else if (playMode == PlaylistModel::SingleLoop) {
+#ifndef USE_TEST
                 startDlnaTp();
+#endif
             } else {
+#ifndef USE_TEST
                 emit mircastState(MIRCAST_CONNECTION_FAILED);
                 model->playNext(true);
                 m_attempts = 0;
                 m_mircastState = Connecting;
+#endif
             }
         } else {
             qInfo() << "miracast failed! curret attempts:" << m_attempts << "Max:" << MAXMIRCAST * 10;
@@ -483,9 +511,11 @@ void MircastWidget::slotReadyRead()
         return;
     }
     if(reply->error() != QNetworkReply::NoError) {
+#ifndef USE_TEST
         qInfo() << "Error:" << QString::number(reply->error());
         qDebug() << "Network reply error, returning.";
         return;
+#endif
     }
     QByteArray data = reply->readAll().replace("\r\n", "").replace("\\", "");
     qInfo() << "xml data:" << data;
@@ -498,10 +528,12 @@ void MircastWidget::slotReadyRead()
     device.uuid = uuidList.last();
     qDebug() << "Parsed device name:" << sName << ", UUID:" << device.uuid;
     foreach (MiracastDevice mirDevice, m_devicesList) {
+#ifndef USE_TEST
         if (device.uuid == mirDevice.uuid) {
             qDebug() << "Device with same UUID already exists, returning.";
             return;
         }
+#endif
     }
     m_devicesList.append(device);
     createListeItem(device, data, reply);
@@ -546,9 +578,13 @@ void MircastWidget::slotPauseDlnaTp()
 {
     if(m_mircastState != MircastWidget::Screening) return;
     if(m_nPlayStatus == MircastWidget::Play) {
+#ifndef USE_TEST
         pauseDlnaTp();
+#endif
     } else if(m_nPlayStatus == MircastWidget::Pause) {
+#ifndef USE_TEST
         playDlnaTp();
+#endif
     }
 }
 /**
@@ -594,8 +630,10 @@ void MircastWidget::startDlnaTp(ItemWidget *item)
 
     if(!m_dlnaContentServer)
     {
+#ifndef USE_TEST
         qWarning() << "HTTP server not initialized";
         return;
+#endif
     } else {
         dmr::PlayerEngine *pEngine = static_cast<dmr::PlayerEngine *>(m_pEngine);
         if(pEngine && pEngine->playlist().count() > 0) {
@@ -611,8 +649,10 @@ void MircastWidget::startDlnaTp(ItemWidget *item)
     }
     if(!m_isStartHttpServer)
     {
+#ifndef USE_TEST
         qWarning() << "HTTP server not started";
         return;
+#endif
     }
 //    if(btn->text() != "Stop") {
         m_pDlnaSoapPost->SoapOperPost(DLNA_Stop, m_ControlURLPro, m_URLAddrPro, m_sLocalUrl);
@@ -729,15 +769,19 @@ RefreButtonWidget::RefreButtonWidget(QWidget *parent)
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, this, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         qDebug() << "Size mode changed signal received for RefreButtonWidget. New sizeMode:" << sizeMode;
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             qDebug() << "Switching to NormalMode. Adjusting spinner and refresh button sizes.";
             m_spinner->setFixedSize(24, 24);
             m_refreBtn->setFixedSize(24, 24);
             m_refreBtn->setPixmap(QIcon::fromTheme("dcc_update").pixmap(QSize(24, 24)));
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Switching to CompactMode. Adjusting spinner and refresh button sizes.";
             m_spinner->setFixedSize(16, 16);
             m_refreBtn->setFixedSize(16, 16);
             m_refreBtn->setPixmap(QIcon::fromTheme("dcc_update").pixmap(QSize(16, 16)));
+#endif
         }
     });
 #else
@@ -840,11 +884,15 @@ ItemWidget* ListWidget::createListeItem(MiracastDevice device, const QByteArray 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, this, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         qDebug() << "Size mode changed signal received for ListWidget. New sizeMode:" << sizeMode;
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             qDebug() << "Switching to NormalMode. Resizing for normal mode.";
             resize(MIRCASTWIDTH, count() * 34);
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Switching to CompactMode. Resizing for compact mode.";
             resize(MIRCASTWIDTH, count() * 25);
+#endif
         }
         update();
         qDebug() << "ListWidget resized and updated.";
@@ -913,7 +961,9 @@ void ListWidget::slotSelectItem()
         update();
         qDebug() << "ListWidget updated.";
     } else {
+#ifndef USE_TEST
         qDebug() << "Sender item is null.";
+#endif
     }
     qDebug() << "Exiting ListWidget::slotSelectItem().";
 }
@@ -968,8 +1018,10 @@ ItemWidget::ItemWidget(MiracastDevice device, const QByteArray &data, const QNet
         setProperty(controlURLPro, urlAddrProValue + "/" +strControlURL);
         qDebug() << "Control URL does not start with '/', concatenating with '/'. Final:" << urlAddrProValue + "/" +strControlURL;
     } else {
+#ifndef USE_TEST
         setProperty(controlURLPro, urlAddrProValue +strControlURL);
         qDebug() << "Control URL starts with '/', concatenating directly. Final:" << urlAddrProValue +strControlURL;
+#endif
     }
     setProperty(friendlyNamePro, sName);
     qDebug() << "ItemWidget properties set.";
@@ -983,11 +1035,15 @@ ItemWidget::ItemWidget(MiracastDevice device, const QByteArray &data, const QNet
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, this, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         qDebug() << "Size mode changed signal received for ItemWidget. New sizeMode:" << sizeMode;
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             qDebug() << "Switching to NormalMode. Resizing ItemWidget for normal mode.";
             setFixedSize(MIRCASTWIDTH, 34);
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "Switching to CompactMode. Resizing ItemWidget for compact mode.";
             setFixedSize(MIRCASTWIDTH, 25);
+#endif
         }
         update();
         qDebug() << "ItemWidget resized and updated.";
@@ -1063,7 +1119,9 @@ void ItemWidget::paintEvent(QPaintEvent *pEvent)
         paint.fillPath(path, QBrush(QColor(0,129,255)));
         TextColor = Qt::white;
     } else if (m_hover) {
+#ifndef USE_TEST
         paint.fillPath(path, QBrush(QColor(0, 0, 0, 0.05 * 255)));
+#endif
     }
     paint.setPen(TextColor);
     paint.drawText(QRect(20, (rect().height() - 20) / 2, 176, 20), m_displayName, QTextOption(Qt::AlignVCenter));

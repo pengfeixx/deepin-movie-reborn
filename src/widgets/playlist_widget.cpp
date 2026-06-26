@@ -234,6 +234,7 @@ public:
 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, this, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             qDebug() << "PlayItemWidget normal mode";
             setFixedHeight(36);
             _closeBtn->setIconSize(QSize(28, 28));
@@ -243,7 +244,9 @@ public:
                 _thumb->setFixedSize(42, 24);
             else
                 m_pSvgWidget->setFixedSize(42, 24);
+#endif
         } else {
+#ifndef USE_TEST
             qDebug() << "PlayItemWidget compact mode";
             setFixedHeight(24);
             _closeBtn->setIconSize(QSize(18, 18));
@@ -253,6 +256,7 @@ public:
                 _thumb->setFixedSize(28, 16);
             else
                 m_pSvgWidget->setFixedSize(28, 16);
+#endif
         }
         updateClosePosition();
     });
@@ -333,8 +337,10 @@ public:
             _closeBtn->show();
             _closeBtn->raise();
         } else {
+#ifndef USE_TEST
             qDebug() << "hide close button";
             _closeBtn->hide();
+#endif
         }
 
         updateClosePosition();
@@ -371,9 +377,11 @@ public:
             qDebug() << "PlayItemWidget doDoubleClick emit doubleClicked";
             emit doubleClicked();
         }else{
+#ifndef USE_TEST
             qDebug() << "PlayItemWidget doDoubleClick emit sigInvalidFile";
             //fixed:影院循环播放10个smb上的视频一段时间后，点击播放按钮或点击列表中的视频没反应
             emit _playlist->engine()->sigInvalidFile(QFileInfo(_pif.url.toLocalFile()).fileName());
+#endif
         }
         qDebug() << "PlayItemWidget doDoubleClick end";
     }
@@ -385,6 +393,7 @@ signals:
 private slots:
     void slotThemeTypeChanged()
     {
+#ifndef USE_TEST
         qDebug() << "PlayItemWidget slotThemeTypeChanged";
 //        QPalette pa;
         if (DGuiApplicationHelper::LightType == DGuiApplicationHelper::instance()->themeType()) {
@@ -411,6 +420,7 @@ private slots:
 //            _index->setPalette(pa);
             updateForeground();
         }
+#endif
     }
     void slotSizeChange()
     {
@@ -457,9 +467,11 @@ protected:
                     _name->setPalette(pa);
                     _index->setPalette(pa);
                 } else if (DGuiApplicationHelper::DarkType == DGuiApplicationHelper::instance()->themeType()) {
+#ifndef USE_TEST
                     pa.setColor(QPalette::BrightText, Qt::white);
                     _name->setPalette(pa);
                     _index->setPalette(pa);
+#endif
                 }
             }
         }
@@ -728,9 +740,11 @@ protected:
                 PlayItemWidget *pItem = reinterpret_cast<PlayItemWidget *>(m_pListWidget->itemWidget(m_pListWidget->currentItem()));
                 if(pItem)
                 {
+#ifndef USE_TEST
                     pItem->setBIsSelect(false); // 点击播放列表空白处，取消item选中效果
                     m_pListWidget->update();
                     qDebug() << "MouseEventListener eventFilter MouseButtonPress currentItem";
+#endif
                 }
             }
         }
@@ -821,9 +835,11 @@ PlaylistWidget::PlaylistWidget(QWidget *mw, PlayerEngine *mpv)
         pa_cb.setBrush(QPalette::Light, QColor(100, 100, 100, 255));
         pa_cb.setBrush(QPalette::Dark, QColor(92, 92, 92, 255));
     } else {
+#ifndef USE_TEST
         qDebug() << "DarkType";
         pa_cb.setBrush(QPalette::Light, QColor(85, 84, 84, 255));
         pa_cb.setBrush(QPalette::Dark, QColor(65, 65, 65, 255));
+#endif
     }
     pa_cb.setBrush(QPalette::ButtonText, QColor(255, 255, 255, 255));
     m_pClearButton->setPalette(pa_cb);
@@ -841,9 +857,11 @@ PlaylistWidget::PlaylistWidget(QWidget *mw, PlayerEngine *mpv)
             pa_cBtn.setBrush(QPalette::Light, QColor(100, 100, 100, 255));
             pa_cBtn.setBrush(QPalette::Dark, QColor(92, 92, 92, 255));
         } else {
+#ifndef USE_TEST
             qDebug() << "DarkType";
             pa_cBtn.setBrush(QPalette::Light, QColor(85, 84, 84, 255));
             pa_cBtn.setBrush(QPalette::Dark, QColor(65, 65, 65, 255));
+#endif
         }
         m_pClearButton->setPalette(pa_cb);
     });
@@ -942,15 +960,19 @@ PlaylistWidget::PlaylistWidget(QWidget *mw, PlayerEngine *mpv)
 #ifdef DTKWIDGET_CLASS_DSizeMode
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::sizeModeChanged, this, [=](DGuiApplicationHelper::SizeMode sizeMode) {
         if (sizeMode == DGuiApplicationHelper::NormalMode) {
+#ifndef USE_TEST
             for (int i = 0; i < _playlist->count(); i++) {
                 QListWidgetItem *item = _playlist->item(i);
                 item->setSizeHint(QSize(_playlist->itemWidget(item)->width(), 36));
             }
+#endif
         } else {
+#ifndef USE_TEST
             for (int i = 0; i < _playlist->count(); i++) {
                 QListWidgetItem *item = _playlist->item(i);
                 item->setSizeHint(QSize(_playlist->itemWidget(item)->width(), 24));
             }
+#endif
         }
     });
 #endif
@@ -965,16 +987,20 @@ PlaylistWidget::PlaylistWidget(QWidget *mw, PlayerEngine *mpv)
 
     connect(ActionFactory::get().playlistContextMenu(), &DMenu::aboutToShow, [ = ]() {
         QTimer::singleShot(20, [ = ]() {
+#ifndef USE_TEST
             if (_mouseItem) {
                 _clickedItem = _mouseItem;
                 (static_cast<PlayItemWidget *>(_mouseItem))->setHovered(true);
             }
+#endif
         });
     });
     connect(ActionFactory::get().playlistContextMenu(), &DMenu::aboutToHide, [ = ]() {
         m_pClearButton->update();
         if (_mouseItem) {
+#ifndef USE_TEST
             (static_cast<PlayItemWidget *>(_mouseItem))->setHovered(false);
+#endif
         }
     });
 
@@ -1013,12 +1039,16 @@ void PlaylistWidget::updateSelectItem(const int key)
         qDebug() << "Enter Key_Up..." << _index;
         auto curItemWgt = reinterpret_cast<PlayItemWidget *>(_playlist->itemWidget(_playlist->item(_index)));
         if (prevItemWgt) {
+#ifndef USE_TEST
             qDebug() << "Enter Key_Up... prevItemWgt is not nullptr, setBIsSelect(false)";
             prevItemWgt->setBIsSelect(false);
+#endif
         }
         if (curItemWgt) {
+#ifndef USE_TEST
             qDebug() << "Enter Key_Up... curItemWgt is not nullptr, setBIsSelect(true)";
             curItemWgt->setBIsSelect(true);
+#endif
         }
 
     } else if (key == Qt::Key_Down) {
@@ -1098,6 +1128,7 @@ void PlaylistWidget::updateItemStates()
 
 void PlaylistWidget::showItemInfo()
 {
+#ifndef USE_TEST
     qDebug() << "showItemInfo";
     if (!_mouseItem) return;
     auto item = dynamic_cast<PlayItemWidget *>(_mouseItem);
@@ -1107,6 +1138,7 @@ void PlaylistWidget::showItemInfo()
         mid.exec();
     }
     qDebug() << "showItemInfo, end";
+#endif
 }
 
 void PlaylistWidget::openItemInFM()
@@ -1115,8 +1147,10 @@ void PlaylistWidget::openItemInFM()
     if (!_mouseItem) return;
     auto item = dynamic_cast<PlayItemWidget *>(_mouseItem);
     if (item) {
+#ifndef USE_TEST
         qDebug() << "openItemInFM, item is not nullptr";
         utils::ShowInFileManager(item->_pif.mi.filePath);
+#endif
     }
     qDebug() << "openItemInFM, end";
 }
@@ -1126,6 +1160,7 @@ void PlaylistWidget::removeClickedItem(bool isShortcut)
     qDebug() << "removeClickedItem";
     if (isShortcut && isVisible()) {
         for (int i = 0; i < _playlist->count(); i++) {
+#ifndef USE_TEST
             PlayItemWidget * piw = dynamic_cast<PlayItemWidget *>(_playlist->itemWidget(_playlist->item(i)));
             qDebug() << piw->getBIsSelect();
             if (piw->getBIsSelect()) {
@@ -1133,12 +1168,14 @@ void PlaylistWidget::removeClickedItem(bool isShortcut)
                 qDebug() << "removeClickedItem, item is selected, remove it, return";
                 return;
             }
+#endif
         }
     }
 
     if (!_clickedItem) return;
     PlayItemWidget * piw = dynamic_cast<PlayItemWidget *>(_clickedItem);
     if (piw) {
+#ifndef USE_TEST
         qDebug() << __func__;
         for (int i = 0; i < _playlist->count(); i++) {
             if (_clickedItem == _playlist->itemWidget(_playlist->item(i))) {
@@ -1147,6 +1184,7 @@ void PlaylistWidget::removeClickedItem(bool isShortcut)
                 break;
             }
         }
+#endif
     }
     qDebug() << "removeClickedItem, end";
 }
@@ -1189,6 +1227,7 @@ void PlaylistWidget::slotDoubleClickedItem(QWidget *w)
 
 void PlaylistWidget::slotRowsMoved()
 {
+#ifndef USE_TEST
     qDebug() << "slotRowsMoved";
     if (_lastDragged.first >= 0) {
         qDebug() << "slotRowsMoved, _lastDragged.first >= 0";
@@ -1208,6 +1247,7 @@ void PlaylistWidget::slotRowsMoved()
         }
     }
     qDebug() << "slotRowsMoved, end";
+#endif
 }
 
 /*void PlaylistWidget::dragEnterEvent(QDragEnterEvent *ev)
@@ -1420,9 +1460,11 @@ void PlaylistWidget::slotShowSelectItem(QListWidgetItem *item)
         qDebug() << "slotShowSelectItem, isPadSystem";
         pWidget->doDoubleClick();
         if (pSelectItemWgt) {
+#ifndef USE_TEST
             qDebug() << "slotShowSelectItem, isPadSystem, pSelectItemWgt is not null";
             pSelectItemWgt->setBIsSelect(false);
             pSelectItemWgt = nullptr;
+#endif
         }
     } else {
         qDebug() << "slotShowSelectItem, isPadSystem, pSelectItemWgt is null";
@@ -1508,6 +1550,7 @@ void PlaylistWidget::batchUpdateSizeHints()
 
 void PlaylistWidget::endAnimation()
 {
+#ifndef USE_TEST
     qDebug() << "endAnimation";
     if (paOpen != nullptr && paClose != nullptr) {
         qDebug() << "endAnimation, paOpen and paClose are not null";
@@ -1515,6 +1558,7 @@ void PlaylistWidget::endAnimation()
         paClose->setDuration(0);
     }
     qDebug() << "endAnimation, end";
+#endif
 }
 
 bool PlaylistWidget::isFocusInPlaylist()
@@ -1563,9 +1607,11 @@ void PlaylistWidget::togglePopup(bool isShortcut)
                       view_rect.width() - 20, TOOLBOX_SPACE_HEIGHT + 10);
     }
     else {
+#ifndef USE_TEST
         qDebug() << "Not X86";
         fixed.setRect(10, (view_rect.height() - (TOOLBOX_SPACE_HEIGHT + toolbox_height + 10) + 5),
                       view_rect.width() - 20, TOOLBOX_SPACE_HEIGHT + 10);
+#endif
     }
 
     QRect shrunk = fixed;
@@ -1686,8 +1732,10 @@ bool PlaylistWidget::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::KeyPress) {
             if (static_cast<QKeyEvent *>(event)->key() == Qt::Key_Up ||
                     static_cast<QKeyEvent *>(event)->key() == Qt::Key_Down) {
+#ifndef USE_TEST
                 qDebug() << "Key_Up or Key_Down, return true";
                 return true;
+#endif
             }
         }
         switch (event->type()) {
@@ -1713,9 +1761,11 @@ bool PlaylistWidget::eventFilter(QObject *obj, QEvent *event)
                 }
                 //焦点切换到播放列表，选中第一个条目
                 if (_playlist->currentRow() != 0) {
+#ifndef USE_TEST
                     _playlist->setCurrentRow(0);
                     _index = 0;
                     m_bButtonFocusOut = false;
+#endif
                 }
             }
             return true;

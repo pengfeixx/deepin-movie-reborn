@@ -105,8 +105,10 @@ bool FileFilter::isMediaFile(QUrl url)
         qDebug() << "MPV exists. Judging type by FFmpeg.";
         miType = typeJudgeByFFmpeg(url);
     } else {
+#ifndef USE_TEST
         qDebug() << "MPV does not exist. Judging type by Gst.";
         miType = typeJudgeByGst(url);
+#endif
     }
 
     if (miType == MediaType::Audio || miType == MediaType::Video) {
@@ -200,8 +202,10 @@ bool FileFilter::isAudio(QUrl url)
         qDebug() << "MPV exists. Judging type by FFmpeg.";
         bAudio = typeJudgeByFFmpeg(url) == MediaType::Audio ? true : false;
     } else {
+#ifndef USE_TEST
         qDebug() << "MPV does not exist. Judging type by Gst.";
         bAudio = typeJudgeByGst(url) == MediaType::Audio ? true : false;
+#endif
     }
 
     qDebug() << "Storing result in m_mapCheckAudio. bAudio:" << bAudio;
@@ -219,8 +223,10 @@ bool FileFilter::isSubtitle(QUrl url)
         qDebug() << "MPV exists. Judging type by FFmpeg.";
         result = typeJudgeByFFmpeg(url) == MediaType::Subtitle ? true : false;
     } else {
+#ifndef USE_TEST
         qDebug() << "MPV does not exist. Judging type by Gst.";
         result = typeJudgeByGst(url) == MediaType::Subtitle ? true : false;
+#endif
     }
     qDebug() << "Exiting FileFilter::isSubtitle() with result:" << result;
     return result;
@@ -234,8 +240,10 @@ bool FileFilter::isVideo(QUrl url)
         qDebug() << "MPV exists. Judging type by FFmpeg.";
         result = typeJudgeByFFmpeg(url) == MediaType::Video ? true : false;
     } else {
+#ifndef USE_TEST
         qDebug() << "MPV does not exist. Judging type by Gst.";
         result = typeJudgeByGst(url) == MediaType::Video ? true : false;
+#endif
     }
     qDebug() << "Exiting FileFilter::isVideo() with result:" << result;
     return result;
@@ -271,8 +279,10 @@ FileFilter::MediaType FileFilter::typeJudgeByFFmpeg(const QUrl &url)
     qDebug() << "Input file opened successfully.";
     if(g_mvideo_avformat_find_stream_info(av_ctx, nullptr) < 0)
     {
+#ifndef USE_TEST
         qDebug() << "Failed to find stream info. Returning MediaType::Other.";
         return MediaType::Other;
+#endif
     }
     qDebug() << "Stream info found successfully.";
 
@@ -308,8 +318,10 @@ FileFilter::MediaType FileFilter::typeJudgeByFFmpeg(const QUrl &url)
         qDebug() << "Subtitle codec found. Setting miType to Subtitle.";
         miType = MediaType::Subtitle;
     } else {
+#ifndef USE_TEST
         qDebug() << "No video, audio, or subtitle codecs found. Setting miType to Other.";
         miType = MediaType::Other;
+#endif
     }
 
     if (strMimeType.contains("x-7z")) { //7z压缩包中会检测出音频流
@@ -369,7 +381,9 @@ bool FileFilter::isFormatSupported(const QUrl &url)
     }
     if(g_mvideo_avformat_find_stream_info(av_ctx, nullptr) < 0)
     {
+#ifndef USE_TEST
         return false;
+#endif
     }
 
 #ifdef __sw_64__

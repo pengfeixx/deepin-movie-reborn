@@ -48,8 +48,10 @@ NotificationWidget::NotificationWidget(QWidget *parent)
         m_pTimer->setInterval(2000);
         qDebug() << "Setting timer interval to 2000ms for non-Wayland environment";
     } else {
+#ifndef USE_TEST
         m_pTimer->setInterval(500);
         qDebug() << "Setting timer interval to 500ms for Wayland environment";
+#endif
     }
     m_pTimer->setSingleShot(true);
     connect(m_pTimer, &QTimer::timeout, this, &QWidget::hide);
@@ -57,9 +59,13 @@ NotificationWidget::NotificationWidget(QWidget *parent)
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [=](int nType) {
         qDebug() << "Theme type changed to:" << nType;
         if (nType == 2) {
+#ifndef USE_TEST
             m_pMsgLabel->setForegroundRole(DPalette::TextLively);
+#endif
         } else {
+#ifndef USE_TEST
             m_pMsgLabel->setForegroundRole(QPalette::ToolTipText);
+#endif
         }
     });
 

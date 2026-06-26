@@ -155,12 +155,14 @@ void OnlineSubtitle::replyReceived(QNetworkReply *reply)
     
     if (reply->error() != QNetworkReply::NoError) {
         if (reply->property("type") == "sub") {
+#ifndef USE_TEST
             _pendingDownloads--;
             if (_pendingDownloads <= 0) {
                 _lastReason = FailReason::NetworkError;
                 qWarning() << "Network error occurred, marking download as failed";
                 subtitlesDownloadComplete();
             }
+#endif
         }
         qWarning() << "Network error:" << reply->errorString();
         reply->deleteLater();
@@ -181,6 +183,7 @@ void OnlineSubtitle::replyReceived(QNetworkReply *reply)
 
         auto json = QJsonDocument::fromJson(data);
         if (json.isArray()) {
+#ifndef USE_TEST
             qDebug() << "Processing subtitle metadata";
             _subs.clear();
 
@@ -203,6 +206,7 @@ void OnlineSubtitle::replyReceived(QNetworkReply *reply)
             }
 
             downloadSubtitles();
+#endif
         }
 
         reply->close();
@@ -214,8 +218,10 @@ void OnlineSubtitle::replyReceived(QNetworkReply *reply)
         auto data = reply->readAll();
         auto disposition = reply->header(QNetworkRequest::ContentDispositionHeader);
         if (disposition.isValid()) {
+#ifndef USE_TEST
             //set name to disposition filename
             qDebug() << "Using Content-Disposition header for filename:" << disposition;
+#endif
         } else if (reply->hasRawHeader("Content-Disposition")) {
             QByteArray name;
             auto bytes = reply->rawHeader("Content-Disposition");
@@ -237,16 +243,19 @@ void OnlineSubtitle::replyReceived(QNetworkReply *reply)
                 qDebug() << "Extracted filename from Content-Disposition:" << name_tmpl;
             }
         } else {
+#ifndef USE_TEST
             int id = reply->property("id").toInt();
             name_tmpl = QString("%1.%2").arg(_lastReqVideo.completeBaseName())
                         .arg(_subs[id].ext);
             qDebug() << "Generated filename from video name:" << name_tmpl;
+#endif
         }
         reply->close();
 
         int id = reply->property("id").toInt();
         path = findAvailableName(name_tmpl, id);
         {
+#ifndef USE_TEST
             QFile f(path);
             if (f.open(QFile::WriteOnly)) {
                 f.write(data);
@@ -255,22 +264,29 @@ void OnlineSubtitle::replyReceived(QNetworkReply *reply)
                 qWarning() << "Failed to save subtitle to:" << path;
             }
             f.flush();
+#endif
         }
 
         _pendingDownloads--;
         QString conflictPath;
         if (hasHashConflict(path, name_tmpl, conflictPath)) {
+#ifndef USE_TEST
             qInfo() << "Found duplicate subtitle, using existing file:" << conflictPath;
             _lastReason = FailReason::Duplicated;
             _subs[id].local = conflictPath;
             QFile::remove(path);
+#endif
         } else {
+#ifndef USE_TEST
             _subs[id].local = path;
             qDebug() << "Subtitle saved successfully to:" << path;
+#endif
         }
 
         if (_pendingDownloads <= 0) {
+#ifndef USE_TEST
             subtitlesDownloadComplete();
+#endif
         }
     }
     reply->deleteLater();
@@ -298,9 +314,11 @@ bool OnlineSubtitle::hasHashConflict(const QString &path, const QString &tmpl, Q
             auto h = utils::FullFileHash(di.fileInfo());
             qDebug() << "Comparing with existing file:" << di.fileName() << "Hash:" << h;
             if (h == md5) {
+#ifndef USE_TEST
                 conflictPath = di.filePath();
                 qInfo() << "Found hash conflict with:" << conflictPath;
                 return true;
+#endif
             }
         }
     }
@@ -310,6 +328,7 @@ bool OnlineSubtitle::hasHashConflict(const QString &path, const QString &tmpl, Q
 
 void OnlineSubtitle::downloadSubtitles()
 {
+#ifndef USE_TEST
     qDebug() << "Starting subtitle download for" << _subs.size() << "files";
     _pendingDownloads = _subs.size();
 
@@ -326,6 +345,7 @@ void OnlineSubtitle::downloadSubtitles()
         reply->setProperty("type", "sub");
         reply->setProperty("id", sub.id);
     }
+#endif
 }
 
 QString OnlineSubtitle::storeLocation()

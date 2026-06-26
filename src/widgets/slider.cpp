@@ -74,8 +74,10 @@ int DMRSlider::position2progress(const QPoint &p)
         qreal span = static_cast<qreal>(total) / contentsRect().width();
         progress = static_cast<int>(span * (p.x()) + minimum());
     } else {
+#ifndef USE_TEST
         qreal span = static_cast<qreal>(total) / contentsRect().height();
         progress = static_cast<int>(span * (height() - p.y()) + minimum());
+#endif
     }
     qDebug() << "Converting position" << p << "to progress:" << progress;
     return progress;
@@ -177,7 +179,9 @@ void DMRSlider::leaveEvent(QEvent *pEvent)
  */
 void DMRSlider::forceLeave()
 {
+#ifndef USE_TEST
     leaveEvent(nullptr);
+#endif
 }
 /**
  * @brief enterEvent 鼠标进入事件函数

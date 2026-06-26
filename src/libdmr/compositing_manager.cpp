@@ -82,22 +82,30 @@ public:
 
                 } else if (machine.find("alpha") != string::npos
                            || machine.find("sw_64") != string::npos) {
+#ifndef USE_TEST
                     // shenwei
                     qInfo() << "match shenwei";
                     _pf = Platform::Alpha;
 
+#endif
                 } else if (machine.find("mips") != string::npos
-                           || machine.find("loongarch64") != string::npos) { // loongson
+                           || machine.find("loongarch64") != string::npos) {
+#ifndef USE_TEST // loongson
                     qInfo() << "match loongson";
                     _pf = Platform::Mips;
-                } else if (machine.find("aarch64") != string::npos) { // ARM64
+#endif
+                } else if (machine.find("aarch64") != string::npos) {
+#ifndef USE_TEST // ARM64
                     qInfo() << "match arm";
                     _pf = Platform::Arm64;
+#endif
                 }
             }
         } else {
+#ifndef USE_TEST
             QString error = uname.readAllStandardError();
             qWarning() << error;
+#endif
         }
 
         return _pf;
@@ -120,8 +128,10 @@ static bool detect550Series()
     foreach(QString readData, sList) {
         if(readData.contains("1002:699f") || readData.contains("1002:6987") || readData.contains("6766:3d02")) {
             if (!readData.isEmpty()) {
+#ifndef USE_TEST
                 qInfo() << qPrintable("Detect 550 series, using vaapi. ") << readData;
                 return true;
+#endif
             }
         }
     }
@@ -188,6 +198,7 @@ CompositingManager::CompositingManager()
         utils::getPlayProperty("/etc/mpv/play.conf", m_pMpvConfig);
         qDebug() << "MPV config loaded from /etc/mpv/play.conf (Wayland).";
         if (m_pMpvConfig->contains("vo")) {
+#ifndef USE_TEST
             qDebug() << "MPV config contains 'vo' key (Wayland).";
             QString value = m_pMpvConfig->find("vo").value();
             qDebug() << "'vo' value is:" << value;
@@ -195,11 +206,14 @@ CompositingManager::CompositingManager()
                 _composited = true;//libmpv只能走opengl
                 qInfo() << "Using libmpv, forcing composited mode";
             }
+#endif
         }
         if (_platform == Platform::Arm64 && isDriverLoaded) {
+#ifndef USE_TEST
             qDebug() << "Platform is Arm64 and driver is loaded (Wayland).";
             m_bHasCard = true;
             qInfo() << "Arm64 platform with loaded driver detected";
+#endif
         }
         qInfo() << "Composited mode:" << _composited;
         return;
@@ -236,12 +250,14 @@ CompositingManager::CompositingManager()
                 line = in.readLine();
                 int idx = line.indexOf("value=");
                 if (idx != -1) {
+#ifndef USE_TEST
                     bool ok = false;
                     int val = line.mid(idx + 6).trimmed().toInt(&ok);
                     if (ok)
                         effectValue = val;
                     else
                         qWarning() << "Invalid base.decode.Effect value in config";
+#endif
                 }
             }
                 }
@@ -354,8 +370,10 @@ CompositingManager::CompositingManager()
         //判断是否安装核外驱动  因为mt显卡 不能通过opengl渲染
         QDir mtdir(QLibraryInfo::location(QLibraryInfo::LibrariesPath) +QDir::separator() +"musa");
         if ( mtdir.exists()) {
+#ifndef USE_TEST
            _composited = false;
            qDebug() << "MT GPU detected and musa driver exists, _composited set to false.";
+#endif
         }
     }
 
@@ -378,8 +396,10 @@ CompositingManager::CompositingManager()
         QString value = m_pMpvConfig->find("vo").value();
         qDebug() << "'vo' value is:" << value;
         if ("libmpv" == value) {
+#ifndef USE_TEST
             _composited = true;//libmpv只能走opengl
             qInfo() << "Using libmpv, forcing composited mode (final section)";
+#endif
         }
     } else {
         qDebug() << "MPV config does not contain 'vo' key (final section).";
@@ -394,11 +414,15 @@ CompositingManager::CompositingManager()
         QString value = m_pMpvConfig->find("vo").value();
         qDebug() << "'vo' value is:" << value;
         if ("libmpv" == value) {
+#ifndef USE_TEST
             _composited = true;//libmpv只能走opengl
             qInfo() << "Using libmpv, forcing composited mode (test)";
+#endif
         } else {
+#ifndef USE_TEST
             _composited = false;//libmpv只能走opengl
             qDebug() << "Not using libmpv, _composited set to false (test).";
+#endif
         }
     } else {
         qDebug() << "MPV config does not contain 'vo' key (test).";
@@ -419,8 +443,10 @@ CompositingManager::CompositingManager()
 #endif
     if(!isMpvExists())
     {
+#ifndef USE_TEST
         _composited = true;
         qDebug() << "MPV does not exist, _composited set to true.";
+#endif
     } else {
         qDebug() << "MPV exists.";
     }
@@ -430,10 +456,12 @@ CompositingManager::CompositingManager()
 
 CompositingManager::~CompositingManager()
 {
+#ifndef USE_TEST
     qDebug() << "Entering ~CompositingManager()";
     delete m_pMpvConfig;
     m_pMpvConfig = nullptr;
     qDebug() << "Exiting ~CompositingManager()";
+#endif
 }
 
 #if !defined (__x86_64__)
@@ -615,6 +643,7 @@ void CompositingManager::softDecodeCheck()
         qDebug() << "CPU model contains KX-U6780A. Checking modalias.";
         QFile modaInfo("/sys/class/dmi/id/modalias");
         if (modaInfo.open(QIODevice::ReadOnly)) {
+#ifndef USE_TEST
             qDebug() << "/sys/class/dmi/id/modalias opened successfully.";
             QString data = modaInfo.readAll();
             QStringList modaList = data.split(":");
@@ -628,9 +657,12 @@ void CompositingManager::softDecodeCheck()
             }
             modaInfo.close();
             qDebug() << "/sys/class/dmi/id/modalias closed.";
+#endif
         } else {
+#ifndef USE_TEST
             qWarning() << "Failed to open modalias file";
             qDebug() << "Failed to open /sys/class/dmi/id/modalias.";
+#endif
         }
     } else {
         qDebug() << "CPU model does not contain KX-U6780A. Skipping modalias check.";
@@ -664,14 +696,18 @@ void CompositingManager::softDecodeCheck()
         QString version = str.mid(start, 6);
         qDebug() << "Initial NVIDIA driver version string:" << str.trimmed() << ", parsed version:" << version.trimmed();
         while (version.left(1) == " ") {
+#ifndef USE_TEST
             start++;
             version = str.mid(start, 6);
             qDebug() << "Trimmed NVIDIA driver version (loop):" << version.trimmed();
+#endif
         }
         qInfo() << "NVIDIA driver version:" << version;
         if (version.toFloat() >= 460.39) {
+#ifndef USE_TEST
             m_bOnlySoftDecode = true;
             qInfo() << "NVIDIA driver version >= 460.39, enabling soft decode only";
+#endif
         }
         nvidiaVersion.close();
     }
@@ -746,7 +782,9 @@ void CompositingManager::detectOpenGLEarly()
             qDebug() << "XDG_SESSION_TYPE is not wayland and WAYLAND_DISPLAY does not contain wayland. Setting QT_XCB_GL_INTEGRATION to xcb_egl.";
             qputenv("QT_XCB_GL_INTEGRATION", "xcb_egl");
         } else {
+#ifndef USE_TEST
             qDebug() << "XDG_SESSION_TYPE is wayland or WAYLAND_DISPLAY contains wayland. Not setting QT_XCB_GL_INTEGRATION to xcb_egl.";
+#endif
         }
     } else {
         qDebug() << "Running on Vmwgfx. Not setting QT_XCB_GL_INTEGRATION.";
@@ -787,9 +825,11 @@ void CompositingManager::detectPciID()
             if (line.contains(QString("00:02.0"))) {
                 qDebug() << "Line contains 00:02.0.";
                 if (line.contains(QString("8086")) && line.contains(QString("1912"))) {
+#ifndef USE_TEST
                     qInfo() << "CompositingManager::detectPciID():need to change to iHD";
                     qputenv("LIBVA_DRIVER_NAME", "iHD");
                     break;
+#endif
                 }
             }
         }
@@ -852,8 +892,10 @@ bool CompositingManager::isDriverLoadedCorrectly()
         filters << "Xorg.*.log";
         QStringList xorglogs = logDir.entryList(filters, QDir::Files);
         if (xorglogs.isEmpty()) {
+#ifndef USE_TEST
             qWarning() << "No Xorg log files found";
             return false;
+#endif
         }
         xorglog = xorglogs.last();
         qDebug() << "Found Xorg log for Mips:" << xorglog;
@@ -1031,7 +1073,9 @@ bool CompositingManager::is_device_viable(int id)
         qDebug() << "Exiting is_device_viable() with result:" << result;
         return result;
     } else {
+#ifndef USE_TEST
         qDebug() << "Access to buffer path failed (R_OK). Exiting is_device_viable() with result: false";
+#endif
     }
 
     qDebug() << "Exiting is_device_viable() with result: false (default return).";
